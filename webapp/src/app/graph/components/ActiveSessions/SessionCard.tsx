@@ -1,7 +1,7 @@
 'use client'
 
-import { memo } from 'react'
-import { Monitor, Globe, MessageSquare, Skull, ArrowUpCircle, Square } from 'lucide-react'
+import { memo, useState, useCallback } from 'react'
+import { Monitor, Globe, MessageSquare, Skull, ArrowUpCircle, Square, Loader2 } from 'lucide-react'
 import type { MsfSession, MsfJob, NonMsfSession } from '@/lib/websocket-types'
 import styles from './SessionCard.module.css'
 
@@ -23,6 +23,20 @@ export const SessionCard = memo(function SessionCard({
   onUpgrade,
 }: SessionCardProps) {
   const isMeterpreter = session.type === 'meterpreter'
+  const [killing, setKilling] = useState(false)
+  const [upgrading, setUpgrading] = useState(false)
+
+  const handleKill = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setKilling(true)
+    try { await onKill() } finally { setKilling(false) }
+  }, [onKill])
+
+  const handleUpgrade = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setUpgrading(true)
+    try { await onUpgrade() } finally { setUpgrading(false) }
+  }, [onUpgrade])
 
   return (
     <div
@@ -61,21 +75,23 @@ export const SessionCard = memo(function SessionCard({
 
       <div className={styles.actions}>
         <button
-          className={`${styles.actionBtn} ${styles.killBtn}`}
-          onClick={e => { e.stopPropagation(); onKill() }}
+          className={`${styles.actionBtn} ${styles.killBtn} ${killing ? styles.loading : ''}`}
+          onClick={handleKill}
+          disabled={killing || upgrading}
           title="Kill session"
         >
-          <Skull size={11} />
-          Kill
+          {killing ? <Loader2 size={11} className={styles.spinner} /> : <Skull size={11} />}
+          {killing ? 'Killing...' : 'Kill'}
         </button>
         {!isMeterpreter && (
           <button
-            className={`${styles.actionBtn} ${styles.upgradeBtn}`}
-            onClick={e => { e.stopPropagation(); onUpgrade() }}
+            className={`${styles.actionBtn} ${styles.upgradeBtn} ${upgrading ? styles.loading : ''}`}
+            onClick={handleUpgrade}
+            disabled={killing || upgrading}
             title="Upgrade to meterpreter"
           >
-            <ArrowUpCircle size={11} />
-            Upgrade
+            {upgrading ? <Loader2 size={11} className={styles.spinner} /> : <ArrowUpCircle size={11} />}
+            {upgrading ? 'Upgrading...' : 'Upgrade'}
           </button>
         )}
       </div>
@@ -127,6 +143,13 @@ interface JobCardProps {
 }
 
 export const JobCard = memo(function JobCard({ job, onKill }: JobCardProps) {
+  const [stopping, setStopping] = useState(false)
+
+  const handleStop = useCallback(async () => {
+    setStopping(true)
+    try { await onKill() } finally { setStopping(false) }
+  }, [onKill])
+
   return (
     <div className={styles.jobCard}>
       <div className={styles.jobInfo}>
@@ -136,12 +159,13 @@ export const JobCard = memo(function JobCard({ job, onKill }: JobCardProps) {
         )}
       </div>
       <button
-        className={`${styles.actionBtn} ${styles.killBtn}`}
-        onClick={onKill}
+        className={`${styles.actionBtn} ${styles.killBtn} ${stopping ? styles.loading : ''}`}
+        onClick={handleStop}
+        disabled={stopping}
         title="Stop job"
       >
-        <Square size={10} />
-        Stop
+        {stopping ? <Loader2 size={10} className={styles.spinner} /> : <Square size={10} />}
+        {stopping ? 'Stopping...' : 'Stop'}
       </button>
     </div>
   )

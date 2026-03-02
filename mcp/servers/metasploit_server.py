@@ -648,25 +648,58 @@ class PersistentMsfConsole:
                         session_type = s.get("type", "meterpreter")
                         break
 
-            # Commands that open a sub-shell inside meterpreter — need exit before background
+            # Detect command type for meterpreter sessions
             _SHELL_COMMANDS = {"shell", "irb", "python", "pry"}
-            cmd_lower = command.strip().lower().split()[0] if command.strip() else ""
-            opens_subshell = session_type == "meterpreter" and cmd_lower in _SHELL_COMMANDS
+            cmd_parts = command.strip().lower().split()
+            cmd_lower = cmd_parts[0] if cmd_parts else ""
+            has_inline_flag = len(cmd_parts) > 1 and cmd_parts[1] == "-c"
+            opens_subshell = (
+                session_type == "meterpreter"
+                and cmd_lower in _SHELL_COMMANDS
+                and not has_inline_flag
+            )
+            is_inline_shell = (
+                session_type == "meterpreter"
+                and cmd_lower == "shell"
+                and has_inline_flag
+            )
 
             # Enter session
             self._quick_execute(f"sessions -i {session_id}", timeout=10, quiet_period=1.0)
-            # Run user command
-            output = self._quick_execute(command, timeout=30, quiet_period=1.5)
-            # Return to msf console (type-aware)
-            if opens_subshell:
-                # User ran 'shell'/'irb'/etc — we're now inside a sub-shell, not meterpreter
-                # Send 'exit' to leave the sub-shell back to meterpreter, then 'background'
+
+            if is_inline_shell:
+                # "shell -c 'cmd'" creates a channel that may not auto-close
+                # reliably, leaving msfconsole stuck in channel-read mode.
+                # Instead: open interactive shell → run the inner command →
+                # exit shell → background.  This is reliable because the
+                # channel stays open until we explicitly send 'exit'.
+                inner_cmd = re.sub(
+                    r'^shell\s+-c\s+', '', command, flags=re.IGNORECASE
+                ).strip()
+                # Strip surrounding quotes from inner command
+                if (len(inner_cmd) >= 2
+                        and inner_cmd[0] in ('"', "'")
+                        and inner_cmd[-1] == inner_cmd[0]):
+                    inner_cmd = inner_cmd[1:-1]
+                # Open interactive shell (channel stays open)
+                self._quick_execute("shell", timeout=10, quiet_period=1.5)
+                # Run the actual command through the channel
+                output = self._quick_execute(inner_cmd, timeout=30, quiet_period=1.5)
+                # Exit shell → close channel → back to meterpreter
                 self._quick_execute("exit", timeout=5, quiet_period=0.5)
-                self._quick_execute("background", timeout=5, quiet_period=0.5)
-            elif session_type == "meterpreter":
+                # Background meterpreter → back to msf
                 self._quick_execute("background", timeout=5, quiet_period=0.5)
             else:
-                self._quick_execute("exit", timeout=5, quiet_period=0.5)
+                # Run user command as-is
+                output = self._quick_execute(command, timeout=30, quiet_period=1.5)
+                # Return to msf console (type-aware)
+                if opens_subshell:
+                    self._quick_execute("exit", timeout=5, quiet_period=0.5)
+                    self._quick_execute("background", timeout=5, quiet_period=0.5)
+                elif session_type == "meterpreter":
+                    self._quick_execute("background", timeout=5, quiet_period=0.5)
+                else:
+                    self._quick_execute("exit", timeout=5, quiet_period=0.5)
 
             return {"busy": False, "output": _clean_ansi_output(output)}
         except Exception as e:
