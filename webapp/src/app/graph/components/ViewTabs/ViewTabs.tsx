@@ -6,6 +6,18 @@ import styles from './ViewTabs.module.css'
 
 export type ViewMode = 'graph' | 'table' | 'sessions'
 
+export interface TunnelInfo {
+  active: boolean
+  host?: string
+  port?: number
+  srvPort?: number
+}
+
+export interface TunnelStatus {
+  ngrok: TunnelInfo
+  chisel: TunnelInfo
+}
+
 interface ViewTabsProps {
   activeView: ViewMode
   onViewChange: (view: ViewMode) => void
@@ -17,6 +29,8 @@ interface ViewTabsProps {
   filteredRows?: number
   // Sessions badge
   sessionCount?: number
+  // Tunnel status
+  tunnelStatus?: TunnelStatus
 }
 
 export const ViewTabs = memo(function ViewTabs({
@@ -28,6 +42,7 @@ export const ViewTabs = memo(function ViewTabs({
   totalRows,
   filteredRows,
   sessionCount,
+  tunnelStatus,
 }: ViewTabsProps) {
   return (
     <div className={styles.tabBar}>
@@ -64,6 +79,28 @@ export const ViewTabs = memo(function ViewTabs({
         </button>
       </div>
 
+      <div className={styles.rightSection}>
+        {(tunnelStatus?.ngrok?.active || tunnelStatus?.chisel?.active) && (
+          <div className={styles.tunnelBadges}>
+            {tunnelStatus.ngrok?.active && (
+              <span className={styles.tunnelBadge} title={`Tunnel active — used for reverse shells. Target connects to ${tunnelStatus.ngrok.host}:${tunnelStatus.ngrok.port} which forwards to kali-sandbox:4444`}>
+                <span className={styles.tunnelDot} />
+                <span className={styles.tunnelName}>ngrok</span>
+                <span className={styles.tunnelSep}>|</span>
+                <span className={styles.tunnelHost}>{tunnelStatus.ngrok.host}:{tunnelStatus.ngrok.port}</span>
+              </span>
+            )}
+            {tunnelStatus.chisel?.active && (
+              <span className={styles.tunnelBadge} title={`Tunnel active — used for reverse shells. Target connects to ${tunnelStatus.chisel.host}:${tunnelStatus.chisel.port} which forwards to kali-sandbox:4444. Web delivery at ${tunnelStatus.chisel.host}:${tunnelStatus.chisel.srvPort} → kali-sandbox:8080`}>
+                <span className={styles.tunnelDot} />
+                <span className={styles.tunnelName}>chisel</span>
+                <span className={styles.tunnelSep}>|</span>
+                <span className={styles.tunnelHost}>{tunnelStatus.chisel.host}:{tunnelStatus.chisel.port}</span>
+              </span>
+            )}
+          </div>
+        )}
+
       {activeView === 'table' && onGlobalFilterChange && (
         <div className={styles.tableControls}>
           <div className={styles.searchWrapper}>
@@ -88,6 +125,7 @@ export const ViewTabs = memo(function ViewTabs({
           </button>
         </div>
       )}
+      </div>
     </div>
   )
 })

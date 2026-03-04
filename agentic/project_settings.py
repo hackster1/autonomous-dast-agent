@@ -37,6 +37,7 @@ DEFAULT_AGENT_SETTINGS: dict[str, Any] = {
     'BIND_PORT_ON_TARGET': None,  # None = not set (agent will ask user)
     'PAYLOAD_USE_HTTPS': False,
     'NGROK_TUNNEL_ENABLED': False,
+    'CHISEL_TUNNEL_ENABLED': False,
 
     # Agent Limits
     'MAX_ITERATIONS': 100,
@@ -129,6 +130,7 @@ def fetch_agent_settings(project_id: str, webapp_url: str) -> dict[str, Any]:
     settings['BIND_PORT_ON_TARGET'] = project.get('agentBindPortOnTarget', DEFAULT_AGENT_SETTINGS['BIND_PORT_ON_TARGET'])
     settings['PAYLOAD_USE_HTTPS'] = project.get('agentPayloadUseHttps', DEFAULT_AGENT_SETTINGS['PAYLOAD_USE_HTTPS'])
     settings['NGROK_TUNNEL_ENABLED'] = project.get('agentNgrokTunnelEnabled', DEFAULT_AGENT_SETTINGS['NGROK_TUNNEL_ENABLED'])
+    settings['CHISEL_TUNNEL_ENABLED'] = project.get('agentChiselTunnelEnabled', DEFAULT_AGENT_SETTINGS['CHISEL_TUNNEL_ENABLED'])
     settings['MAX_ITERATIONS'] = project.get('agentMaxIterations', DEFAULT_AGENT_SETTINGS['MAX_ITERATIONS'])
     settings['EXECUTION_TRACE_MEMORY_STEPS'] = project.get('agentExecutionTraceMemorySteps', DEFAULT_AGENT_SETTINGS['EXECUTION_TRACE_MEMORY_STEPS'])
     settings['REQUIRE_APPROVAL_FOR_EXPLOITATION'] = project.get('agentRequireApprovalForExploitation', DEFAULT_AGENT_SETTINGS['REQUIRE_APPROVAL_FOR_EXPLOITATION'])

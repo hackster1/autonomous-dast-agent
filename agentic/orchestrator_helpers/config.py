@@ -183,6 +183,14 @@ def is_session_config_complete() -> Tuple[bool, List[str]]:
         if tunnel_info:
             return (True, [])
 
+    # Check chisel tunnel — if active, LHOST/LPORT are derived from VPS URL
+    CHISEL_TUNNEL_ENABLED = get_setting('CHISEL_TUNNEL_ENABLED', False)
+    if CHISEL_TUNNEL_ENABLED:
+        from utils import _query_chisel_tunnel
+        tunnel_info = _query_chisel_tunnel()
+        if tunnel_info:
+            return (True, [])
+
     LPORT = get_setting('LPORT')
     LHOST = get_setting('LHOST', '') or None
     BIND_PORT_ON_TARGET = get_setting('BIND_PORT_ON_TARGET', 4444)

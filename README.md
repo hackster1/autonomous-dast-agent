@@ -117,7 +117,9 @@ The model selector in the project settings **dynamically fetches** available mod
 ```env
 TAVILY_API_KEY=tvly-...        # Web search for the AI agent — get one at tavily.com
 NVD_API_KEY=...                # NIST NVD API — higher rate limits for CVE lookups — nist.gov/developers
-NGROK_AUTHTOKEN=...            # ngrok TCP tunnel for reverse shells — get one at dashboard.ngrok.com
+NGROK_AUTHTOKEN=...            # ngrok TCP tunnel for reverse shells (single port) — dashboard.ngrok.com
+CHISEL_SERVER_URL=...          # chisel TCP tunnel (multi-port, requires VPS) — github.com/jpillora/chisel
+CHISEL_AUTH=user:pass          # optional chisel server authentication
 ```
 
 ### 2. Build & Start
@@ -407,7 +409,7 @@ The agent progresses through three distinct operational phases, each with differ
 
 **Exploitation Phase** — When the agent identifies a viable attack path, it requests a phase transition. This requires **user approval** (configurable). Once approved, the agent gains access to the Metasploit console via MCP and can execute exploits. Four attack path types are supported:
 
-- **CVE Exploit** — the agent searches for a matching Metasploit module, configures the payload (reverse shell or bind shell), sets target parameters, and fires the exploit. For statefull mode, it establishes a Meterpreter session; for stateless mode, it executes one-shot commands. When **ngrok TCP tunnel** is enabled, LHOST and LPORT are auto-detected from the ngrok public URL, allowing reverse shells to work across NAT and cloud environments without manual port forwarding.
+- **CVE Exploit** — the agent searches for a matching Metasploit module, configures the payload (reverse shell or bind shell), sets target parameters, and fires the exploit. For statefull mode, it establishes a Meterpreter session; for stateless mode, it executes one-shot commands. Two **tunnel providers** are supported for NAT/cloud environments: **ngrok** (free, single port 4444, stageless only) and **chisel** (multi-port 4444 + 8080, staged + stageless, requires VPS). When a tunnel is enabled, LHOST and LPORT are auto-detected — no manual port forwarding needed. Chisel also enables web delivery and HTA delivery attacks that require two ports.
 - **Hydra Brute Force** — the agent uses THC Hydra to brute force credentials against services like SSH, FTP, RDP, SMB, MySQL, HTTP forms, and 50+ other protocols. Hydra settings (threads, timeouts, extra checks) are fully configurable per project. After credentials are discovered, the agent establishes access via `sshpass`, database clients, or Metasploit psexec.
 - **Phishing / Social Engineering** — the agent generates malicious payloads (msfvenom executables, Office macro documents, PDFs, web delivery one-liners, HTA servers) and delivers them via email (Python smtplib with configurable SMTP settings), chat download (`docker cp`), or web link. A 6-step workflow guides the agent through target platform selection, handler setup, payload generation, verification, delivery, and session callback. SMTP settings are configured per project in the Attack Paths tab.
 - **Unclassified Fallback** — for techniques that don't match CVE exploit, brute force, or phishing (e.g., SQL injection, XSS, SSRF, file upload). The agent dynamically classifies the attack type and uses available tools generically without a mandatory workflow. These appear with a grey badge and a `-unclassified` suffix in the classification.
@@ -897,7 +899,7 @@ Every project in RedAmon has **180+ configurable parameters** across 11 setting 
 | **Security Checks** | 25+ individual checks: headers, TLS, DNS, exposed services |
 | **GVM Scan** | Scan profiles, target strategy, timeouts |
 | **Integrations** | GitHub secret hunting with 40+ regex patterns |
-| **Agent Behaviour** | LLM model (400+), phases, payloads, ngrok TCP tunnel, approval gates, limits |
+| **Agent Behaviour** | LLM model (400+), phases, payloads, tunnel provider (ngrok/chisel), approval gates, limits |
 | **Attack Paths** | Hydra brute force, phishing SMTP configuration, tool phase restriction matrix |
 
 > **Full parameter reference:** See the **[Project Settings Reference](https://github.com/samugit83/redamon/wiki/9.-Project-Settings-Reference)** in the Wiki for all 180+ parameters with defaults and descriptions.

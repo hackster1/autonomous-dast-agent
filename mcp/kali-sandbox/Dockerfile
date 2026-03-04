@@ -94,10 +94,17 @@ RUN chmod +x /opt/entrypoint.sh
 
 WORKDIR /opt/mcp_servers
 
-# Install ngrok (for optional TCP tunneling of reverse shells)
+# Install ngrok (for optional single-port TCP tunneling of reverse shells)
 RUN ARCH=$(dpkg --print-architecture) && \
     curl -sSL "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-${ARCH}.tgz" \
     | tar -xz -C /usr/local/bin
+
+# Install chisel (for optional multi-port TCP tunneling — reverse shells + web delivery)
+RUN CHISEL_VERSION="1.11.4" && \
+    ARCH=$(dpkg --print-architecture) && \
+    curl -sSL "https://github.com/jpillora/chisel/releases/download/v${CHISEL_VERSION}/chisel_${CHISEL_VERSION}_linux_${ARCH}.gz" \
+    | gunzip > /usr/local/bin/chisel && \
+    chmod +x /usr/local/bin/chisel
 
 # Expose ports for MCP servers (SSE/HTTP transport) + ngrok API
 EXPOSE 8000 8002 8003 8004 8014 4040

@@ -132,3 +132,58 @@
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+
+/* Right section (tunnel badges + table controls) */
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 100%;
+  margin-left: auto;
+}
+
+/* Tunnel status badges */
+
+.tunnelBadges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-5);
+}
+
+.tunnelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-2);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: var(--font-medium);
+  white-space: nowrap;
+}
+
+.tunnelDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+.tunnelName {
+  font-size: 10px;
+}
+
+.tunnelSep {
+  color: var(--border-default);
+  font-size: 10px;
+}
+
+.tunnelHost {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+}

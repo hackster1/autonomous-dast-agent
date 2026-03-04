@@ -137,6 +137,14 @@ services:
     volumes:
       - gvm_redis_socket:/run/redis/
 
+  gvm-postgres-init:
+    image: alpine:3.20
+    container_name: redamon-gvm-postgres-init
+    volumes:
+      - gvm_psql_data:/var/lib/postgresql
+      - gvm_psql_socket:/var/run/postgresql
+    entrypoint: ["/bin/sh", "-c", "rm -f /var/run/postgresql/.s.PGSQL.5432.lock /var/run/postgresql/.s.PGSQL.5432 /var/lib/postgresql/17/main/postmaster.pid && echo 'Cleaned stale PG locks'"]
+
   gvm-postgres:
     image: registry.community.greenbone.net/community/pg-gvm:stable
     container_name: redamon-gvm-postgres
@@ -144,6 +152,9 @@ services:
     volumes:
       - gvm_psql_data:/var/lib/postgresql
       - gvm_psql_socket:/var/run/postgresql
+    depends_on:
+      gvm-postgres-init:
+        condition: service_completed_successfully
 
   gvmd:
     image: registry.community.greenbone.net/community/gvmd:stable
@@ -308,6 +319,8 @@ services:
       MSF_AUTO_UPDATE: "${MSF_AUTO_UPDATE:-true}"
       NUCLEI_AUTO_UPDATE: "${NUCLEI_AUTO_UPDATE:-true}"
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+      CHISEL_SERVER_URL: ${CHISEL_SERVER_URL:-}
+      CHISEL_AUTH: ${CHISEL_AUTH:-}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 8000)); s.close()"]
@@ -339,6 +352,9 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      # Tunnel env vars (for /tunnel-status badge detection)
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+      CHISEL_SERVER_URL: ${CHISEL_SERVER_URL:-}
       # WebSocket config
       WS_HEARTBEAT_INTERVAL: "30"
       WS_TIMEOUT: "300"

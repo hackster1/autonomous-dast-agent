@@ -335,6 +335,20 @@ _SESSION_BASE = os.environ.get(
 ).rsplit("/progress", 1)[0]
 
 
+@app.get("/tunnel-status", tags=["System"])
+async def get_tunnel_status():
+    """Return live status of ngrok and chisel tunnels."""
+    from utils import _query_ngrok_tunnel, _query_chisel_tunnel
+
+    ngrok_info = _query_ngrok_tunnel() if os.environ.get("NGROK_AUTHTOKEN") else None
+    chisel_info = _query_chisel_tunnel() if os.environ.get("CHISEL_SERVER_URL") else None
+
+    return {
+        "ngrok": {"active": True, "host": ngrok_info["host"], "port": ngrok_info["port"]} if ngrok_info else {"active": False},
+        "chisel": {"active": True, "host": chisel_info["host"], "port": chisel_info["port"], "srvPort": chisel_info["srv_port"]} if chisel_info else {"active": False},
+    }
+
+
 @app.get("/sessions", tags=["Sessions"])
 async def get_sessions():
     """List all active Metasploit sessions, background jobs, and non-MSF sessions."""

@@ -10,7 +10,7 @@ import { PageBottomBar } from './components/PageBottomBar'
 import { ReconConfirmModal } from './components/ReconConfirmModal'
 import { GvmConfirmModal } from './components/GvmConfirmModal'
 import { ReconLogsDrawer } from './components/ReconLogsDrawer'
-import { ViewTabs, type ViewMode } from './components/ViewTabs'
+import { ViewTabs, type ViewMode, type TunnelStatus } from './components/ViewTabs'
 import { DataTable } from './components/DataTable'
 import { ActiveSessions } from './components/ActiveSessions'
 import { useGraphData, useDimensions, useNodeSelection, useTableData } from './hooks'
@@ -88,6 +88,21 @@ export default function GraphPage() {
     const interval = setInterval(fetchStatus, 5000)
     return () => clearInterval(interval)
   }, [projectId, userId])
+
+  // Tunnel status polling — check every 10s which tunnels are active
+  const [tunnelStatus, setTunnelStatus] = useState<TunnelStatus>()
+
+  useEffect(() => {
+    const fetchTunnels = async () => {
+      try {
+        const res = await fetch('/api/agent/tunnel-status')
+        if (res.ok) setTunnelStatus(await res.json())
+      } catch { /* ignore */ }
+    }
+    fetchTunnels()
+    const interval = setInterval(fetchTunnels, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Recon status hook - must be before useGraphData to provide isReconRunning
   const {
@@ -634,6 +649,7 @@ export default function GraphPage() {
         totalRows={filteredByType.length}
         filteredRows={textFilteredCount}
         sessionCount={activeSessions.totalCount}
+        tunnelStatus={tunnelStatus}
       />
 
       <div ref={bodyRef} className={styles.body}>

@@ -272,23 +272,31 @@ export function AgentBehaviourSection({ data, updateField }: AgentBehaviourSecti
             <p className={styles.toggleDescription} style={{ marginBottom: 'var(--space-2)' }}>
               <strong>Reverse</strong>: target connects back to you (LHOST + LPORT). <strong>Bind</strong>: you connect to the target (leave LPORT empty).
             </p>
-            <div className={styles.toggleRow}>
-              <div>
-                <span className={styles.toggleLabel}>Enable ngrok TCP Tunnel</span>
-                <p className={styles.toggleDescription}>
-                  Route reverse shell traffic through an ngrok TCP tunnel.
-                  Requires <code>NGROK_AUTHTOKEN</code> in .env (auto-starts with docker compose up).
-                  When active, LHOST and LPORT are auto-detected from the ngrok public URL.
-                </p>
-              </div>
-              <Toggle
-                checked={data.agentNgrokTunnelEnabled}
-                onChange={(checked) => updateField('agentNgrokTunnelEnabled', checked)}
-              />
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Tunnel Provider</label>
+              <select
+                className="textInput"
+                value={data.agentNgrokTunnelEnabled ? 'ngrok' : data.agentChiselTunnelEnabled ? 'chisel' : 'none'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  updateField('agentNgrokTunnelEnabled', val === 'ngrok');
+                  updateField('agentChiselTunnelEnabled', val === 'chisel');
+                }}
+              >
+                <option value="none">None (manual LHOST/LPORT)</option>
+                <option value="ngrok">ngrok (single port — free, no VPS needed)</option>
+                <option value="chisel">chisel (multi-port — requires VPS)</option>
+              </select>
+              <span className={styles.fieldHint}>
+                {data.agentNgrokTunnelEnabled && 'Requires NGROK_AUTHTOKEN in .env. Tunnels port 4444 only (handler). Stageless payloads required. Web delivery / HTA not supported.'}
+                {data.agentChiselTunnelEnabled && 'Requires CHISEL_SERVER_URL in .env and a chisel server running on your VPS. Tunnels ports 4444 (handler) + 8080 (web delivery). Stageless payloads required.'}
+                {!data.agentNgrokTunnelEnabled && !data.agentChiselTunnelEnabled && 'No tunnel — configure LHOST/LPORT manually below.'}
+              </span>
             </div>
-            {data.agentNgrokTunnelEnabled ? (
+            {(data.agentNgrokTunnelEnabled || data.agentChiselTunnelEnabled) ? (
               <p className={styles.toggleDescription} style={{ marginTop: 'var(--space-2)', padding: 'var(--space-2)', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-1)' }}>
-                LHOST and LPORT are auto-detected from the ngrok tunnel. No manual configuration needed.
+                {data.agentNgrokTunnelEnabled && 'LHOST and LPORT are auto-detected from the ngrok tunnel. No manual configuration needed.'}
+                {data.agentChiselTunnelEnabled && 'LHOST is derived from the VPS hostname. Both handler (4444) and web delivery (8080) ports are tunneled. No manual configuration needed.'}
               </p>
             ) : (
               <div className={styles.fieldRow}>

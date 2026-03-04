@@ -11,10 +11,6 @@ from .tool_registry import TOOL_REGISTRY
 # TOOL REGISTRY — imported from tool_registry.py (single source of truth)
 # =============================================================================
 
-# Internal tools that exist in the phase map but are never shown to the LLM
-INTERNAL_TOOLS = set()  # msf_restart removed — agent can call it manually
-
-
 # =============================================================================
 # DYNAMIC PROMPT BUILDERS
 # =============================================================================
@@ -23,7 +19,7 @@ def _get_visible_tools(allowed_tools):
     """Get TOOL_REGISTRY entries for allowed tools, preserving registry order."""
     return [
         (name, info) for name, info in TOOL_REGISTRY.items()
-        if name in allowed_tools and name not in INTERNAL_TOOLS
+        if name in allowed_tools
     ]
 
 

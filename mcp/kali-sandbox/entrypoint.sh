@@ -24,7 +24,9 @@ if [ "${NUCLEI_AUTO_UPDATE:-true}" = "true" ]; then
     nuclei -update-templates 2>/dev/null || echo "[!] Nuclei template update failed"
 fi
 
-# Start ngrok TCP tunnel in background if auth token is provided
+# Start tunnels in background (both can run simultaneously — project setting controls which one the agent uses)
+TUNNEL_STARTED=false
+
 if [ -n "${NGROK_AUTHTOKEN:-}" ]; then
     echo "[*] Starting ngrok TCP tunnel on port 4444..."
     mkdir -p /root/.config/ngrok
@@ -36,8 +38,25 @@ agent:
 NGROK_CFG
     ngrok tcp 4444 --config /root/.config/ngrok/ngrok.yml --log=stdout --log-level=info > /var/log/ngrok.log 2>&1 &
     echo "[*] ngrok started (API at http://0.0.0.0:4040)"
-else
-    echo "[*] Skipping ngrok (NGROK_AUTHTOKEN not set)"
+    TUNNEL_STARTED=true
+fi
+
+if [ -n "${CHISEL_SERVER_URL:-}" ]; then
+    echo "[*] Starting chisel reverse tunnel to ${CHISEL_SERVER_URL}..."
+    CHISEL_AUTH_FLAG=""
+    if [ -n "${CHISEL_AUTH:-}" ]; then
+        CHISEL_AUTH_FLAG="--auth ${CHISEL_AUTH}"
+    fi
+    chisel client ${CHISEL_AUTH_FLAG} "${CHISEL_SERVER_URL}" \
+        R:4444:localhost:4444 \
+        R:8080:localhost:8080 \
+        > /var/log/chisel.log 2>&1 &
+    echo "[*] chisel started (tunneling ports 4444 + 8080 to VPS)"
+    TUNNEL_STARTED=true
+fi
+
+if [ "${TUNNEL_STARTED}" = "false" ]; then
+    echo "[*] Skipping tunnel (no NGROK_AUTHTOKEN or CHISEL_SERVER_URL set)"
 fi
 
 echo "[*] Starting MCP servers..."

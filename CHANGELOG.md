@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.1] - 2026-03-04
+
+### Added
+
+- **Chisel TCP Tunnel Integration** — multi-port reverse tunnel alternative to ngrok for full attack path support:
+  - chisel (v1.11.4) installed alongside ngrok in kali-sandbox Dockerfile — single binary, supports amd64 and arm64
+  - Reverse tunnels both port 4444 (handler) and port 8080 (web delivery/HTA) through a single connection to a VPS
+  - Enables **Web Delivery** (Method C) and **HTA Delivery** (Method D) phishing attacks that require two ports — previously blocked with ngrok's single-port limitation
+  - **Stageless** Meterpreter payloads required through chisel (staged payloads fail through tunnels — same as ngrok)
+  - Deterministic endpoint discovery — LHOST derived from `CHISEL_SERVER_URL` hostname (no API polling needed)
+  - Auto-reconnect with exponential backoff if VPS connection drops
+  - `CHISEL_SERVER_URL` and `CHISEL_AUTH` env vars added to `.env.example` and `docker-compose.yml`
+  - `_query_chisel_tunnel()` utility in `agentic/utils.py` with `get_session_config_prompt()` integration
+  - `agentChiselTunnelEnabled` Prisma field with database migration
+
+### Changed
+
+- **Tunnel Provider Dropdown** — replaced the single "Enable ngrok TCP Tunnel" toggle in Agent Behaviour settings with a **Tunnel Provider** dropdown (None / ngrok / chisel). Mutually exclusive — selecting one automatically disables the other
+- **Agent prompts updated** — phishing, CVE exploit, and post-exploitation prompts now conditionally guide the agent based on which tunnel provider is active (ngrok limitations vs chisel capabilities)
+- **Wiki and documentation** — updated AI Agent Guide, Project Settings Reference, Attack Paths guide, README, and README.ATTACK_PATHS.md with dual tunnel provider documentation
+
+---
+
 ## [2.2.0] - 2026-03-01
 
 ### Added
@@ -29,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `is_session_config_complete()` short-circuits to complete when ngrok tunnel is active
   - `NGROK_AUTHTOKEN` added to `.env.example` and `docker-compose.yml` (kali-sandbox env + port 4040 exposed)
 - **Phishing Section in Project Settings** — new `PhishingSection` component with SMTP configuration textarea for per-project email delivery settings
-- **ngrok Toggle in Agent Behaviour Settings** — "Enable ngrok TCP Tunnel" toggle that conditionally hides manual LHOST/LPORT/Bind Port fields when active
+- **Tunnel Toggle in Agent Behaviour Settings** — "Enable ngrok TCP Tunnel" toggle that conditionally hides manual LHOST/LPORT/Bind Port fields when active (upgraded to Tunnel Provider dropdown in v2.2.1)
 - **Social Engineering Suggestion Templates** — 15 new suggestion buttons in AI Assistant drawer under a pink "Social Engineering" template group (Mail icon), covering payload generation, malicious documents, web delivery, HTA, email phishing, AV evasion, and more
 - **Phishing Attack Path Badge** — pink "PHISH" badge with `#ec4899` accent color for phishing sessions in the AI Assistant drawer
 - **Prisma Migrations** — `20260228120000_add_ngrok_tunnel` (agentNgrokTunnelEnabled) and `20260228130000_add_phishing_smtp_config` (phishingSmtpConfig) database migrations
