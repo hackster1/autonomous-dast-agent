@@ -12,34 +12,34 @@
 <br/>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/v2.3.0-release-2E8B57?style=for-the-badge" alt="Version 2.3.0"/>
-  <img src="https://img.shields.io/badge/WARNING-SECURITY%20TOOL-B22222?style=for-the-badge" alt="Security Tool Warning"/>
-  <img src="https://img.shields.io/badge/LICENSE-MIT-4169A1?style=for-the-badge" alt="MIT License"/>
+  <img src="https://img.shields.io/badge/v2.3.0-release-2E8B57?style=flat-square" alt="Version 2.3.0"/>
+  <img src="https://img.shields.io/badge/WARNING-SECURITY%20TOOL-B22222?style=flat-square" alt="Security Tool Warning"/>
+  <img src="https://img.shields.io/badge/LICENSE-MIT-4169A1?style=flat-square" alt="MIT License"/>
   <br/>
-  <img src="https://img.shields.io/badge/FULL-KILL%20CHAIN-A01025?style=for-the-badge" alt="Full Kill Chain"/>
-  <img src="https://img.shields.io/badge/AI-AUTONOMOUS%20AGENT-6A5ACD?style=for-the-badge&logo=openai&logoColor=white" alt="AI Powered"/>
-  <img src="https://img.shields.io/badge/ZERO-HUMAN%20INTERVENTION-CC7722?style=for-the-badge" alt="Zero Click"/>
-  <img src="https://img.shields.io/badge/Kali-Powered-466A7A?style=for-the-badge&logo=kalilinux&logoColor=white" alt="Kali Powered"/>
-  <img src="https://img.shields.io/badge/Docker-Compose-1A7EC2?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
-  <img src="https://img.shields.io/badge/IP%2FCIDR-TARGETING-0D7377?style=for-the-badge" alt="IP/CIDR Targeting"/>
-  <img src="https://img.shields.io/badge/Stealth-Mode-5B21B6?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgNjAwIiBmaWxsPSJ3aGl0ZSI+PHBvbHlnb24gcG9pbnRzPSI0MDAsODAgODAwLDQyMCA3MjAsNDIwIDY4MCwzODAgNjIwLDQyMCA1NjAsMzgwIDUwMCw0MjAgNDQwLDM4MCAzODAsNDIwIDMyMCwzODAgMjYwLDQyMCAyMDAsMzgwIDEyMCw0MjAgMCw0MjAiLz48L3N2Zz4=&logoColor=white" alt="Stealth Mode"/>
-  <img src="https://img.shields.io/badge/30+-SECURITY%20TOOLS-CC8F00?style=for-the-badge&logo=hack-the-box&logoColor=white" alt="30+ Security Tools"/>
-  <img src="https://img.shields.io/badge/185,000+-DETECTION%20RULES-8B1142?style=for-the-badge" alt="185,000+ Detection Rules"/>
-  <img src="https://img.shields.io/badge/180+-PROJECT%20SETTINGS-00899B?style=for-the-badge" alt="180+ Settings"/>
-  <img src="https://img.shields.io/badge/400+-AI%20MODELS-04A878?style=for-the-badge&logo=huggingface&logoColor=white" alt="400+ AI Models"/>
-  <img src="https://img.shields.io/badge/%F0%9F%96%A5%EF%B8%8F_LOCAL%20MODELS-OLLAMA%20%7C%20vLLM%20%7C%20LM%20Studio-B85C00?style=for-the-badge" alt="Local Models Support"/>
+  <img src="https://img.shields.io/badge/FULL-KILL%20CHAIN-A01025?style=flat-square" alt="Full Kill Chain"/>
+  <img src="https://img.shields.io/badge/AI-AUTONOMOUS%20AGENT-6A5ACD?style=flat-square&logo=openai&logoColor=white" alt="AI Powered"/>
+  <img src="https://img.shields.io/badge/ZERO-HUMAN%20INTERVENTION-CC7722?style=flat-square" alt="Zero Click"/>
+  <img src="https://img.shields.io/badge/Kali-Powered-466A7A?style=flat-square&logo=kalilinux&logoColor=white" alt="Kali Powered"/>
+  <img src="https://img.shields.io/badge/Docker-Compose-1A7EC2?style=flat-square&logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/IP%2FCIDR-TARGETING-0D7377?style=flat-square" alt="IP/CIDR Targeting"/>
+  <img src="https://img.shields.io/badge/Stealth-Mode-5B21B6?style=flat-square&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgNjAwIiBmaWxsPSJ3aGl0ZSI+PHBvbHlnb24gcG9pbnRzPSI0MDAsODAgODAwLDQyMCA3MjAsNDIwIDY4MCwzODAgNjIwLDQyMCA1NjAsMzgwIDUwMCw0MjAgNDQwLDM4MCAzODAsNDIwIDMyMCwzODAgMjYwLDQyMCAyMDAsMzgwIDEyMCw0MjAgMCw0MjAiLz48L3N2Zz4=&logoColor=white" alt="Stealth Mode"/>
+  <img src="https://img.shields.io/badge/30+-SECURITY%20TOOLS-CC8F00?style=flat-square&logo=hack-the-box&logoColor=white" alt="30+ Security Tools"/>
+  <img src="https://img.shields.io/badge/185,000+-DETECTION%20RULES-8B1142?style=flat-square" alt="185,000+ Detection Rules"/>
+  <img src="https://img.shields.io/badge/180+-PROJECT%20SETTINGS-00899B?style=flat-square" alt="180+ Settings"/>
+  <img src="https://img.shields.io/badge/400+-AI%20MODELS-04A878?style=flat-square&logo=huggingface&logoColor=white" alt="400+ AI Models"/>
+  <img src="https://img.shields.io/badge/%F0%9F%96%A5%EF%B8%8F_LOCAL%20MODELS-OLLAMA%20%7C%20vLLM%20%7C%20LM%20Studio-B85C00?style=flat-square" alt="Local Models Support"/>
   <br/>
-  <img src="https://img.shields.io/badge/Metasploit-Framework-1A6DAA?style=for-the-badge" alt="Metasploit Framework"/>
-  <img src="https://img.shields.io/badge/OpenVAS-Scanner-66B245?style=for-the-badge" alt="OpenVAS Scanner"/>
-  <img src="https://img.shields.io/badge/Nmap-Scanner-4682B4?style=for-the-badge" alt="Nmap Scanner"/>
-  <img src="https://img.shields.io/badge/Nuclei-Scanner-7B42BC?style=for-the-badge" alt="Nuclei Scanner"/>
-  <img src="https://img.shields.io/badge/SQLMap-Injection-C0392B?style=for-the-badge" alt="SQLMap"/>
-  <img src="https://img.shields.io/badge/Hydra-Brute%20Force-E67E22?style=for-the-badge" alt="Hydra Brute Force"/>
-  <img src="https://img.shields.io/badge/CypherFix-Auto%20Remediation-00B894?style=for-the-badge" alt="CypherFix Auto Remediation"/>
-  <img src="https://img.shields.io/badge/AI-PENTEST%20REPORTS-8B5CF6?style=for-the-badge" alt="AI Pentest Reports"/>
-  <img src="https://img.shields.io/badge/RoE-Guardrails-3B82F6?style=for-the-badge" alt="RoE Guardrails"/>
+  <img src="https://img.shields.io/badge/Metasploit-Framework-1A6DAA?style=flat-square" alt="Metasploit Framework"/>
+  <img src="https://img.shields.io/badge/OpenVAS-Scanner-66B245?style=flat-square" alt="OpenVAS Scanner"/>
+  <img src="https://img.shields.io/badge/Nmap-Scanner-4682B4?style=flat-square" alt="Nmap Scanner"/>
+  <img src="https://img.shields.io/badge/Nuclei-Scanner-7B42BC?style=flat-square" alt="Nuclei Scanner"/>
+  <img src="https://img.shields.io/badge/SQLMap-Injection-C0392B?style=flat-square" alt="SQLMap"/>
+  <img src="https://img.shields.io/badge/Hydra-Brute%20Force-E67E22?style=flat-square" alt="Hydra Brute Force"/>
+  <img src="https://img.shields.io/badge/CypherFix-Auto%20Remediation-00B894?style=flat-square" alt="CypherFix Auto Remediation"/>
+  <img src="https://img.shields.io/badge/AI-PENTEST%20REPORTS-8B5CF6?style=flat-square" alt="AI Pentest Reports"/>
+  <img src="https://img.shields.io/badge/RoE-Guardrails-3B82F6?style=flat-square" alt="RoE Guardrails"/>
   <br/>
-  <a href="https://github.com/samugit83/redamon/wiki"><img src="https://img.shields.io/badge/📖_WIKI-FULL%20DOCUMENTATION-1A73E8?style=for-the-badge" alt="Wiki Documentation"/></a>
+  <a href="https://github.com/samugit83/redamon/wiki"><img src="https://img.shields.io/badge/📖_WIKI-FULL%20DOCUMENTATION-1A73E8?style=flat-square" alt="Wiki Documentation"/></a>
 </p>
 
 > **LEGAL DISCLAIMER**: This tool is intended for **authorized security testing**, **educational purposes**, and **research only**. Never use this system to scan, probe, or attack any system you do not own or have explicit written permission to test. Unauthorized access is **illegal** and punishable by law. By using this tool, you accept **full responsibility** for your actions. **[Read Full Disclaimer](DISCLAIMER.md)**
@@ -48,7 +48,7 @@
   <img src="assets/agent.gif" alt="RedAmon Agent Demo" width="100%"/>
 </p>
 <p align="center">
-  <a href="https://youtu.be/afViJUit0xE"><img src="https://img.shields.io/badge/▶_WATCH_DEMO-3_Parallel_Agents-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo"/></a>
+  <a href="https://youtu.be/afViJUit0xE"><img src="https://img.shields.io/badge/▶_WATCH_DEMO-3_Parallel_Agents-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="Watch Demo"/></a>
 </p>
 <p align="center">
   <em>Three AI agents attack simultaneously — one brute-forces SSH credentials with Hydra, one chains a CVE to escalate to root and defaces the homepage, one hunts down every XSS vulnerability on the frontend.</em>
