@@ -64,7 +64,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           userId: project.userId,
           ...(disabledIds.length > 0 ? { id: { notIn: disabledIds } } : {}),
         },
-        select: { id: true, name: true, content: true },
+        select: { id: true, name: true, description: true, content: true },
       })
       return NextResponse.json({ ...projectWithoutBinary, userAttackSkills: skills })
     }

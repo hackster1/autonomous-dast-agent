@@ -27,6 +27,7 @@ interface BuiltInSkillDef {
 interface UserSkillDef {
   id: string
   name: string
+  description?: string | null
   createdAt: string
 }
 

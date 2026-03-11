@@ -14,70 +14,20 @@ from project_settings import get_enabled_builtin_skills, get_enabled_user_skills
 # =============================================================================
 
 _CVE_EXPLOIT_SECTION = """### cve_exploit
-- Exploiting known CVE vulnerabilities
-- Using Metasploit exploit modules (`exploit/*`)
-- Keywords: CVE-XXXX-XXXX, MS17-XXX, vulnerability, exploit, RCE, remote code execution, pwn, hack
-- Requires: TARGET selection, PAYLOAD selection
-- Command: `exploit`
-- Example requests:
-  - "Exploit CVE-2021-41773 on 10.0.0.5"
-  - "Use the Apache path traversal vulnerability"
-  - "Attack the target using MS17-010"
-  - "Test if the server is vulnerable to Log4Shell"
+- Exploit known CVE vulnerabilities directly against a service using Metasploit modules
+- Keywords: CVE-XXXX, exploit, RCE, vulnerability, pwn, hack
 """
 
 _BRUTE_FORCE_SECTION = """### brute_force_credential_guess
-- Password guessing / credential attacks
-- Using THC Hydra for password brute-forcing (`execute_hydra`)
-- Keywords: brute force, crack password, credential attack, dictionary attack, password spray, guess password, wordlist, login attack
-- Services: SSH, FTP, RDP, VNC, SMB, MySQL, MSSQL, PostgreSQL, Telnet, POP3, IMAP, HTTP login, Tomcat
-- Requires: wordlists/credential files
-- Tool: `execute_hydra` (NOT metasploit_console)
-- Example requests:
-  - "Brute force SSH on 10.0.0.5"
-  - "Try to crack the MySQL password"
-  - "Password spray against the FTP server"
-  - "Guess credentials for the Tomcat manager"
-  - "Dictionary attack on the SSH service"
-  - "Try default credentials on PostgreSQL"
-  - "Try to get access to SSH guessing password"
+- Password guessing / credential attacks using Hydra against login services (SSH, FTP, MySQL, RDP, SMB, etc.)
+- Keywords: brute force, crack password, dictionary attack, wordlist, password spray, guess password, credential attack
 """
 
 _PHISHING_SECTION = """### phishing_social_engineering
-- **Core concept: ANY attack where a HUMAN VICTIM must execute, open, click, or install something.**
-  The attacker generates an artifact (payload file, malicious document, link, one-liner) and delivers it
-  to a person. The attack succeeds when the VICTIM runs it on THEIR computer/device.
-- This is the opposite of cve_exploit where the attacker sends a crafted request directly to a SERVICE.
-
-- **Victim-executed payloads** — standalone files the victim runs on their machine:
-  - Windows: EXE, PowerShell scripts, HTA files, LNK shortcuts
-  - Linux: ELF binaries, bash one-liners, Python one-liners
-  - macOS: Mach-O binaries, bash/Python one-liners
-  - Android: APK files
-  - Cross-platform: Python scripts, Java WAR files
-- **Malicious documents** — files the victim opens in an application:
-  - Word/Excel with VBA macros, trojanized PDFs, weaponized RTF, malicious LNK
-- **Web delivery / hosted payloads** — the victim visits a URL or runs a provided one-liner:
-  - HTA server, PowerShell web delivery, Python web delivery, Regsvr32 delivery, PHP delivery
-- **Email delivery** — payload or link sent to victim via email
-- **Payload encoding/evasion** — encoding payloads (shikata_ga_nai, x64/xor) to bypass AV on the victim's machine
-- **Handler setup** — setting up Metasploit `exploit/multi/handler` to catch the callback from the victim's machine (NEVER netcat/socat — only Metasploit handlers create tracked sessions)
-
-- **How to distinguish from other attack skills:**
-  - "Generate a reverse shell for the target" → phishing (victim must execute it)
-  - "Generate a bash one-liner for command injection" → phishing (generating a payload for victim execution)
-  - "Exploit CVE-2021-41773 on 10.0.0.5" → cve_exploit (directly attacks a service, no human victim)
-
-- Tools: `kali_shell` (msfvenom), `metasploit_console` (fileformat modules, handler, web_delivery), `execute_code` (email sending)
-- Example requests (one per category — applies to ALL OS targets):
-  - "Generate a Windows Meterpreter EXE payload and set up the handler" (standalone payload)
-  - "Generate a bash reverse shell one-liner for a Linux victim" (one-liner payload)
-  - "Generate an Android APK backdoor" (mobile payload)
-  - "Generate a macOS Mach-O Meterpreter payload" (macOS payload)
-  - "Create a malicious Word document with a VBA macro" (malicious document)
-  - "Set up a PowerShell web delivery attack" (web delivery)
-  - "Generate a payload and send it via phishing email" (email delivery)
-  - "Generate an encoded EXE with shikata_ga_nai for AV evasion" (encoded payload)
+- Attack where a HUMAN VICTIM must execute, open, click, or install something (payload, document, link, one-liner)
+- Includes: msfvenom payloads, malicious documents, web delivery, email delivery, handler setup
+- Key distinction: victim runs artifact on THEIR machine (vs cve_exploit which hits a service directly)
+- Keywords: payload, reverse shell, msfvenom, backdoor, phishing, malicious document, handler
 """
 
 _UNCLASSIFIED_SECTION = """### <descriptive_term>-unclassified
@@ -181,11 +131,10 @@ def build_classification_prompt(objective: str) -> str:
             section_text, _, _ = _BUILTIN_SKILL_MAP[skill_id]
             parts.append(section_text)
 
-    # User skills
+    # User skills — use description if available, otherwise first 500 chars of content
     for skill in enabled_user_skills:
-        # Include first ~500 chars of content for classification context
-        preview = skill['content'][:500]
-        if len(skill['content']) > 500:
+        preview = skill.get('description') or skill['content'][:500]
+        if not skill.get('description') and len(skill['content']) > 500:
             preview += "..."
         parts.append(f'### user_skill:{skill["id"]}\n'
                      f'- User-defined attack skill: **{skill["name"]}**\n'

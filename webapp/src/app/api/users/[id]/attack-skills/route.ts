@@ -12,7 +12,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const skills = await prisma.userAttackSkill.findMany({
       where: { userId: id },
-      select: { id: true, name: true, createdAt: true },
+      select: { id: true, name: true, description: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -35,12 +35,26 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { id } = await params
     const body = await request.json()
 
-    const { name, content } = body
+    const { name, description, content } = body
     if (!name || typeof name !== 'string' || !name.trim()) {
       return NextResponse.json(
         { error: 'name is required' },
         { status: 400 }
       )
+    }
+    if (description !== undefined && description !== null) {
+      if (typeof description !== 'string') {
+        return NextResponse.json(
+          { error: 'description must be a string' },
+          { status: 400 }
+        )
+      }
+      if (description.length > 500) {
+        return NextResponse.json(
+          { error: 'description must be 500 characters or less' },
+          { status: 400 }
+        )
+      }
     }
     if (!content || typeof content !== 'string') {
       return NextResponse.json(
@@ -68,9 +82,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       data: {
         userId: id,
         name: name.trim(),
+        description: description?.trim() || null,
         content,
       },
-      select: { id: true, name: true, createdAt: true },
+      select: { id: true, name: true, description: true, createdAt: true },
     })
 
     return NextResponse.json(skill, { status: 201 })

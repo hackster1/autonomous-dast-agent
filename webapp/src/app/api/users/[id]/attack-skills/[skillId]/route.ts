@@ -43,12 +43,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 })
     }
 
-    const data: { name?: string; content?: string } = {}
+    const data: { name?: string; description?: string | null; content?: string } = {}
     if (body.name !== undefined) {
       if (typeof body.name !== 'string' || !body.name.trim()) {
         return NextResponse.json({ error: 'name must be a non-empty string' }, { status: 400 })
       }
       data.name = body.name.trim()
+    }
+    if (body.description !== undefined) {
+      if (body.description === null || body.description === '') {
+        data.description = null
+      } else if (typeof body.description !== 'string') {
+        return NextResponse.json({ error: 'description must be a string' }, { status: 400 })
+      } else if (body.description.length > 500) {
+        return NextResponse.json({ error: 'description must be 500 characters or less' }, { status: 400 })
+      } else {
+        data.description = body.description.trim()
+      }
     }
     if (body.content !== undefined) {
       if (typeof body.content !== 'string') {
@@ -63,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const updated = await prisma.userAttackSkill.update({
       where: { id: skillId },
       data,
-      select: { id: true, name: true, createdAt: true },
+      select: { id: true, name: true, description: true, createdAt: true },
     })
 
     return NextResponse.json(updated)

@@ -40,6 +40,7 @@ async def classify_attack_path(
         - target_cves: list of CVE IDs extracted from objective
     """
     prompt = build_classification_prompt(objective)
+    logger.debug(f"Classification prompt ({len(prompt)} chars):\n{prompt}")
 
     messages = [
         SystemMessage(content="You are an attack path classifier. Output only valid JSON."),

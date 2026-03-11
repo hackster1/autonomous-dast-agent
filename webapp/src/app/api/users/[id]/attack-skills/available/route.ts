@@ -30,7 +30,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const userSkills = await prisma.userAttackSkill.findMany({
       where: { userId: id },
-      select: { id: true, name: true, createdAt: true },
+      select: { id: true, name: true, description: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     })
 

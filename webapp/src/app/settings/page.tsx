@@ -42,12 +42,18 @@ export default function SettingsPage() {
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>({})
 
   // Attack Skills
-  const [attackSkills, setAttackSkills] = useState<{ id: string; name: string; createdAt: string }[]>([])
+  const [attackSkills, setAttackSkills] = useState<{ id: string; name: string; description?: string | null; createdAt: string }[]>([])
   const [skillsLoading, setSkillsLoading] = useState(true)
   const [skillNameModal, setSkillNameModal] = useState(false)
   const [pendingSkillContent, setPendingSkillContent] = useState('')
   const [pendingSkillName, setPendingSkillName] = useState('')
+  const [pendingSkillDescription, setPendingSkillDescription] = useState('')
   const [skillUploading, setSkillUploading] = useState(false)
+  // Edit description modal
+  const [editDescModal, setEditDescModal] = useState(false)
+  const [editingSkillId, setEditingSkillId] = useState('')
+  const [editingSkillDescription, setEditingSkillDescription] = useState('')
+  const [editDescSaving, setEditDescSaving] = useState(false)
   // Fetch attack skills
   const fetchSkills = useCallback(async () => {
     if (!userId) return
@@ -84,13 +90,14 @@ export default function SettingsPage() {
       const resp = await fetch(`/api/users/${userId}/attack-skills`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: pendingSkillName.trim(), content: pendingSkillContent }),
+        body: JSON.stringify({ name: pendingSkillName.trim(), description: pendingSkillDescription.trim() || null, content: pendingSkillContent }),
       })
       if (resp.ok) {
         fetchSkills()
         setSkillNameModal(false)
         setPendingSkillContent('')
         setPendingSkillName('')
+        setPendingSkillDescription('')
       } else {
         const err = await resp.json()
         alert(err.error || 'Failed to upload skill')
@@ -100,7 +107,7 @@ export default function SettingsPage() {
     } finally {
       setSkillUploading(false)
     }
-  }, [userId, pendingSkillName, pendingSkillContent, fetchSkills])
+  }, [userId, pendingSkillName, pendingSkillDescription, pendingSkillContent, fetchSkills])
 
   // Download skill as .md
   const downloadSkill = useCallback(async (skillId: string, skillName: string) => {
@@ -132,6 +139,48 @@ export default function SettingsPage() {
       console.error('Failed to delete skill:', err)
     }
   }, [userId, fetchSkills])
+
+  // Open edit description modal
+  const openEditDescription = useCallback(async (skillId: string) => {
+    if (!userId) return
+    try {
+      const resp = await fetch(`/api/users/${userId}/attack-skills/${skillId}`)
+      if (resp.ok) {
+        const skill = await resp.json()
+        setEditingSkillId(skillId)
+        setEditingSkillDescription(skill.description || '')
+        setEditDescModal(true)
+      }
+    } catch (err) {
+      console.error('Failed to fetch skill:', err)
+    }
+  }, [userId])
+
+  // Save edited description
+  const saveEditDescription = useCallback(async () => {
+    if (!userId || !editingSkillId) return
+    setEditDescSaving(true)
+    try {
+      const resp = await fetch(`/api/users/${userId}/attack-skills/${editingSkillId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: editingSkillDescription.trim() || null }),
+      })
+      if (resp.ok) {
+        fetchSkills()
+        setEditDescModal(false)
+        setEditingSkillId('')
+        setEditingSkillDescription('')
+      } else {
+        const err = await resp.json()
+        alert(err.error || 'Failed to update description')
+      }
+    } catch (err) {
+      console.error('Failed to update skill description:', err)
+    } finally {
+      setEditDescSaving(false)
+    }
+  }, [userId, editingSkillId, editingSkillDescription, fetchSkills])
 
   // Fetch providers
   const fetchProviders = useCallback(async () => {
@@ -310,6 +359,14 @@ export default function SettingsPage() {
             />
           </div>
         )}
+        {settingsDirty && (
+          <div className={styles.formActions} style={{ justifyContent: 'flex-end', marginTop: '12px' }}>
+            <button className="primaryButton" onClick={saveSettings} disabled={settingsSaving}>
+              {settingsSaving ? <Loader2 size={14} className={styles.spin} /> : null}
+              Save Settings
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Section 3: Attack Skills */}
@@ -342,10 +399,16 @@ export default function SettingsPage() {
                 <div className={styles.providerInfo}>
                   <div className={styles.providerName}>{skill.name}</div>
                   <div className={styles.providerMeta}>
+                    {skill.description || <span style={{ opacity: 0.5, fontStyle: 'italic' }}>No description</span>}
+                  </div>
+                  <div className={styles.providerMeta}>
                     Uploaded {new Date(skill.createdAt).toLocaleDateString()}
                   </div>
                 </div>
                 <div className={styles.providerActions}>
+                  <button className="iconButton" title="Edit description" onClick={() => openEditDescription(skill.id)}>
+                    <Pencil size={14} />
+                  </button>
                   <button className="iconButton" title="Download" onClick={() => downloadSkill(skill.id, skill.name)}>
                     <Download size={14} />
                   </button>
@@ -359,27 +422,17 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Save settings button */}
-      {settingsDirty && (
-        <div className={styles.formActions} style={{ justifyContent: 'flex-end' }}>
-          <button className="primaryButton" onClick={saveSettings} disabled={settingsSaving}>
-            {settingsSaving ? <Loader2 size={14} className={styles.spin} /> : null}
-            Save Settings
-          </button>
-        </div>
-      )}
-
-      {/* Skill name modal */}
+      {/* Skill upload modal */}
       <Modal
         isOpen={skillNameModal}
-        onClose={() => { setSkillNameModal(false); setPendingSkillContent(''); setPendingSkillName('') }}
+        onClose={() => { setSkillNameModal(false); setPendingSkillContent(''); setPendingSkillName(''); setPendingSkillDescription('') }}
         title="Upload Attack Skill"
         size="small"
         footer={
           <>
             <button
               className="secondaryButton"
-              onClick={() => { setSkillNameModal(false); setPendingSkillContent(''); setPendingSkillName('') }}
+              onClick={() => { setSkillNameModal(false); setPendingSkillContent(''); setPendingSkillName(''); setPendingSkillDescription('') }}
             >
               Cancel
             </button>
@@ -401,12 +454,67 @@ export default function SettingsPage() {
             type="text"
             value={pendingSkillName}
             onChange={(e) => setPendingSkillName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter' && pendingSkillName.trim()) confirmSkillUpload() }}
             placeholder="e.g. SQL Injection Workflow"
             autoFocus
           />
           <span className="formHint">
             This name appears in project settings and classification badges.
+          </span>
+        </div>
+        <div className="formGroup" style={{ marginTop: '12px' }}>
+          <label className="formLabel">Description</label>
+          <textarea
+            className="textInput"
+            rows={3}
+            value={pendingSkillDescription}
+            onChange={(e) => setPendingSkillDescription(e.target.value)}
+            placeholder="e.g. SQL injection testing against web app parameters using sqlmap"
+            maxLength={500}
+          />
+          <span className="formHint">
+            Helps the agent understand when to use this skill. Without a description, the first 500 characters of the markdown are used instead &mdash; a good description improves classification accuracy.
+          </span>
+        </div>
+      </Modal>
+
+      {/* Edit description modal */}
+      <Modal
+        isOpen={editDescModal}
+        onClose={() => { setEditDescModal(false); setEditingSkillId(''); setEditingSkillDescription('') }}
+        title="Edit Skill Description"
+        size="small"
+        footer={
+          <>
+            <button
+              className="secondaryButton"
+              onClick={() => { setEditDescModal(false); setEditingSkillId(''); setEditingSkillDescription('') }}
+            >
+              Cancel
+            </button>
+            <button
+              className="primaryButton"
+              disabled={editDescSaving}
+              onClick={saveEditDescription}
+            >
+              {editDescSaving ? <Loader2 size={14} className={styles.spin} /> : <Pencil size={14} />}
+              Save
+            </button>
+          </>
+        }
+      >
+        <div className="formGroup">
+          <label className="formLabel">Description</label>
+          <textarea
+            className="textInput"
+            rows={3}
+            value={editingSkillDescription}
+            onChange={(e) => setEditingSkillDescription(e.target.value)}
+            placeholder="e.g. SQL injection testing against web app parameters using sqlmap"
+            maxLength={500}
+            autoFocus
+          />
+          <span className="formHint">
+            Helps the agent understand when to use this skill. Without a description, the first 500 characters of the markdown are used instead &mdash; a good description improves classification accuracy.
           </span>
         </div>
       </Modal>
