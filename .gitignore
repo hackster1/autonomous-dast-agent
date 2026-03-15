@@ -63,7 +63,6 @@ env/
 .env
 *.env
 .env.*
-!.env.example
 
 # IDE / Editor settings
 .idea/
@@ -137,6 +136,9 @@ readmes/README.FULLFIX.md
 readmes/README.TOOL_PLUGINS.md
 readmes/README.ATTACK_PATHS.md
 
+
+# Internal docs
+LAUNCH.md
 
 # Claude Code config
 .claude/

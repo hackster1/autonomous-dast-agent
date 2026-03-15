@@ -1393,15 +1393,28 @@ DEEP_THINK_PROMPT = """You are a senior penetration testing strategist performin
 - **Iteration**: {iteration}/{max_iterations}
 - **Trigger**: {trigger_reason}
 
+## Phase Framework
+{phase_definitions}
+
+## Attack Path Strategy
+{attack_path_behavior}
+
 ## Known Target Information
 {target_info}
 
 ## Attack Chain Progress
 {chain_context}
 
+## Objective History
+{objective_history}
+
+## Current Task List
+{todo_list}
+{session_config}
+{roe_section}
 ## Your Task
 
-Perform a deep, structured analysis of the current situation. Consider ALL possible attack vectors, evaluate trade-offs, and produce a clear action plan. Be concise but thorough.
+Perform a deep, structured analysis of the current situation. Consider ALL possible attack vectors, evaluate trade-offs, and produce a clear action plan. Factor in the payload/tunnel configuration, Rules of Engagement constraints, and completed objectives when planning. Be concise but thorough.
 
 Output valid JSON matching this exact schema:
 {{

@@ -712,11 +712,9 @@ async def get_tunnel_status():
     """Return live status of ngrok and chisel tunnels."""
     from utils import _query_ngrok_tunnel, _query_chisel_tunnel
 
-    has_ngrok = bool(os.environ.get("NGROK_AUTHTOKEN"))
-    has_chisel = bool(os.environ.get("CHISEL_SERVER_URL"))
-
-    ngrok_info = _query_ngrok_tunnel() if has_ngrok else None
-    chisel_info = _query_chisel_tunnel() if has_chisel else None
+    # Always try to query both — they return None gracefully if not running
+    ngrok_info = _query_ngrok_tunnel()
+    chisel_info = _query_chisel_tunnel()
 
     return {
         "ngrok": {"active": True, "host": ngrok_info["host"], "port": ngrok_info["port"]} if ngrok_info else {"active": False},

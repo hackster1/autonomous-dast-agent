@@ -125,6 +125,7 @@ def run_resource_enum(recon_data: dict, output_file: Optional[Path] = None, sett
     GAU_METHOD_DETECT_TIMEOUT = settings.get('GAU_METHOD_DETECT_TIMEOUT', 5)
     GAU_METHOD_DETECT_RATE_LIMIT = settings.get('GAU_METHOD_DETECT_RATE_LIMIT', 30)
     GAU_FILTER_DEAD_ENDPOINTS = settings.get('GAU_FILTER_DEAD_ENDPOINTS', True)
+    URLSCAN_API_KEY = settings.get('URLSCAN_API_KEY', '')
 
     # Kiterunner settings
     KITERUNNER_ENABLED = settings.get('KITERUNNER_ENABLED', False)
@@ -321,7 +322,8 @@ def run_resource_enum(recon_data: dict, output_file: Optional[Path] = None, sett
                 GAU_MAX_URLS,
                 GAU_YEAR_RANGE,
                 GAU_VERBOSE,
-                use_proxy
+                use_proxy,
+                URLSCAN_API_KEY
             )
 
         # Collect Katana and GAU results

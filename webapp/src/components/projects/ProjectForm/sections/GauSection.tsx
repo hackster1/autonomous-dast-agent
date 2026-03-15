@@ -44,7 +44,8 @@ export function GauSection({ data, updateField }: GauSectionProps) {
       {isOpen && (
         <div className={styles.sectionContent}>
           <p className={styles.sectionDescription}>
-            Passive URL discovery using GetAllUrls (GAU). Retrieves historical URLs from web archives and threat intelligence sources without touching the target directly. Complements Katana's active crawling with archived data.
+            Passive URL discovery using GetAllUrls (GAU). Retrieves historical URLs from web archives and threat intelligence sources without touching the target directly. Complements Katana&apos;s active crawling with archived data.
+            GAU works without any API keys. To get higher rate limits and more results from URLScan, you can set a URLScan API key in <strong>Settings &gt; Tool API Keys</strong>.
           </p>
           <div className={styles.toggleRow}>
             <div>

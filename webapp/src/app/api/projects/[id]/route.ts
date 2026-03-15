@@ -46,6 +46,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Exclude binary document data from regular responses (use /roe/download instead)
     const { roeDocumentData: _binary, ...projectWithoutBinary } = project
 
+    // If project-level nvdApiKey is empty, fall back to user's global setting
+    if (!projectWithoutBinary.nvdApiKey && project.userId) {
+      const userSettings = await prisma.userSettings.findUnique({
+        where: { userId: project.userId },
+        select: { nvdApiKey: true },
+      })
+      if (userSettings?.nvdApiKey) {
+        projectWithoutBinary.nvdApiKey = userSettings.nvdApiKey
+      }
+    }
+
     // If ?includeSkillContent=true, fetch enabled user skill contents for agent consumption
     // Skills default to ON when not present in config.user (matching frontend behaviour).
     const includeSkillContent = request.nextUrl.searchParams.get('includeSkillContent') === 'true'

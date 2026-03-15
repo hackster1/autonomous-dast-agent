@@ -161,6 +161,7 @@ async def get_defaults():
             'USER_ID',
             'TARGET_DOMAIN',  # Provided by user, not a default
             'SHODAN_API_KEY',  # Fetched at runtime from user's global settings
+            'URLSCAN_API_KEY',  # Fetched at runtime from user's global settings
         }
 
         # Convert snake_case keys to camelCase for frontend

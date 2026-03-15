@@ -492,7 +492,7 @@ def lookup_cves_nvd(
 
         # Handle rate limiting (NVD returns 403 or 429 when rate limited)
         if response.status_code == 403:
-            print(f"        [!] NVD API rate limited. Add NVD_API_KEY env var for higher limits.")
+            print(f"        [!] NVD API rate limited. Configure NVD API Key in Global Settings → Tool API Keys for higher limits.")
             return cves
         if response.status_code == 404:
             # 404 can occur with invalid CPE format or when service is unavailable

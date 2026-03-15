@@ -306,8 +306,8 @@ export function AgentBehaviourSection({ data, updateField }: AgentBehaviourSecti
                 <option value="chisel">chisel (multi-port — requires VPS)</option>
               </select>
               <span className={styles.fieldHint}>
-                {data.agentNgrokTunnelEnabled && 'Requires NGROK_AUTHTOKEN in .env. Tunnels port 4444 only (handler). Stageless payloads required. Web delivery / HTA not supported.'}
-                {data.agentChiselTunnelEnabled && 'Requires CHISEL_SERVER_URL in .env and a chisel server running on your VPS. Tunnels ports 4444 (handler) + 8080 (web delivery). Stageless payloads required.'}
+                {data.agentNgrokTunnelEnabled && 'Configure ngrok auth token in Global Settings → Tunneling. Tunnels port 4444 only (handler). Stageless payloads required. Web delivery / HTA not supported.'}
+                {data.agentChiselTunnelEnabled && 'Configure chisel server URL in Global Settings → Tunneling. Requires a chisel server running on your VPS. Tunnels ports 4444 (handler) + 8080 (web delivery). Stageless payloads required.'}
                 {!data.agentNgrokTunnelEnabled && !data.agentChiselTunnelEnabled && 'No tunnel — configure LHOST/LPORT manually below.'}
               </span>
             </div>

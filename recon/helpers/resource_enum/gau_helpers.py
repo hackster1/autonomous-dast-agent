@@ -95,6 +95,17 @@ def filter_gau_url(url: str, blacklist_extensions: List[str]) -> bool:
         return False
 
 
+def _write_gau_config(urlscan_api_key: str, temp_dir: Path) -> Path:
+    """Write a .gau.toml config file with API keys and return its path."""
+    config_path = temp_dir / ".gau.toml"
+    lines = []
+    if urlscan_api_key:
+        lines.append("[urlscan]")
+        lines.append(f'  apikey = "{urlscan_api_key}"')
+    config_path.write_text("\n".join(lines) + "\n")
+    return config_path
+
+
 def run_gau_for_domain(
     domain: str,
     docker_image: str,
@@ -105,7 +116,8 @@ def run_gau_for_domain(
     max_urls: int,
     year_range: Optional[List[str]] = None,
     verbose: bool = False,
-    use_proxy: bool = False
+    use_proxy: bool = False,
+    urlscan_api_key: str = ""
 ) -> List[str]:
     """
     Run GAU for a single domain to fetch historical URLs.
@@ -121,16 +133,53 @@ def run_gau_for_domain(
         year_range: Optional [from_year, to_year] filter
         verbose: Enable verbose output
         use_proxy: Whether to use Tor proxy
+        urlscan_api_key: Optional URLScan API key for higher rate limits
 
     Returns:
         List of discovered URLs
     """
+    # Write .gau.toml config if API key is provided
+    config_temp_dir = None
+    if urlscan_api_key:
+        config_temp_dir = _create_temp_dir("gau_config")
+        _write_gau_config(urlscan_api_key, config_temp_dir)
+
+    try:
+        return _run_gau_docker(
+            domain, docker_image, providers, threads, timeout,
+            blacklist_extensions, max_urls, year_range, verbose,
+            use_proxy, config_temp_dir,
+        )
+    finally:
+        if config_temp_dir:
+            _cleanup_temp_dir(config_temp_dir)
+
+
+def _run_gau_docker(
+    domain: str,
+    docker_image: str,
+    providers: List[str],
+    threads: int,
+    timeout: int,
+    blacklist_extensions: List[str],
+    max_urls: int,
+    year_range: Optional[List[str]],
+    verbose: bool,
+    use_proxy: bool,
+    config_temp_dir: Optional[Path],
+) -> List[str]:
+    """Internal: execute GAU Docker container."""
     discovered_urls = set()
 
     # Build GAU command
     cmd = ["docker", "run", "--rm"]
     if _is_arm64_host():
         cmd.extend(["--platform", "linux/amd64"])
+
+    # Mount .gau.toml config if available
+    if config_temp_dir:
+        config_file = config_temp_dir / ".gau.toml"
+        cmd.extend(["-v", f"{config_file}:/root/.gau.toml:ro"])
 
     # Network mode for Tor proxy
     if use_proxy:
@@ -201,7 +250,8 @@ def run_gau_discovery(
     max_urls: int,
     year_range: Optional[List[str]] = None,
     verbose: bool = False,
-    use_proxy: bool = False
+    use_proxy: bool = False,
+    urlscan_api_key: str = ""
 ) -> Tuple[List[str], Dict[str, List[str]]]:
     """
     Run GAU passive URL discovery for multiple domains.
@@ -210,6 +260,7 @@ def run_gau_discovery(
         target_domains: Set of domains to query
         ... (configuration parameters)
         use_proxy: Whether to use Tor proxy
+        urlscan_api_key: Optional URLScan API key for higher rate limits
 
     Returns:
         Tuple of (all_discovered_urls, urls_by_domain)
@@ -217,6 +268,8 @@ def run_gau_discovery(
     print(f"\n[*] Running GAU passive URL discovery...")
     print(f"    Providers: {', '.join(providers)}")
     print(f"    Max URLs per domain: {max_urls if max_urls > 0 else 'unlimited'}")
+    if urlscan_api_key:
+        print(f"    URLScan API key: configured")
 
     all_discovered_urls = set()
     urls_by_domain = {}
@@ -234,7 +287,8 @@ def run_gau_discovery(
             max_urls=max_urls,
             year_range=year_range,
             verbose=verbose,
-            use_proxy=use_proxy
+            use_proxy=use_proxy,
+            urlscan_api_key=urlscan_api_key
         )
         urls_by_domain[domain] = domain_urls
         all_discovered_urls.update(domain_urls)

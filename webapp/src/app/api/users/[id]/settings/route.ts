@@ -11,6 +11,8 @@ function maskSecret(value: string): string {
   return '••••••••' + value.slice(-4)
 }
 
+const TUNNEL_FIELDS = ['ngrokAuthtoken', 'chiselServerUrl', 'chiselAuth'] as const
+
 // GET /api/users/[id]/settings
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
@@ -27,16 +29,25 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         tavilyApiKey: '',
         shodanApiKey: '',
         serpApiKey: '',
+        nvdApiKey: '',
+        urlscanApiKey: '',
+        ngrokAuthtoken: '',
+        chiselServerUrl: '',
+        chiselAuth: '',
       })
     }
 
     if (!internal) {
-      // Mask secrets for frontend
+      // Mask secrets for frontend (chiselServerUrl is not a secret)
       settings = {
         ...settings,
         tavilyApiKey: maskSecret(settings.tavilyApiKey),
         shodanApiKey: maskSecret(settings.shodanApiKey),
         serpApiKey: maskSecret(settings.serpApiKey),
+        nvdApiKey: maskSecret(settings.nvdApiKey),
+        urlscanApiKey: maskSecret(settings.urlscanApiKey),
+        ngrokAuthtoken: maskSecret(settings.ngrokAuthtoken),
+        chiselAuth: maskSecret(settings.chiselAuth),
       }
     }
 
@@ -62,7 +73,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     })
 
     const data: Record<string, string> = {}
-    const fields = ['tavilyApiKey', 'shodanApiKey', 'serpApiKey'] as const
+    const fields = ['tavilyApiKey', 'shodanApiKey', 'serpApiKey', 'nvdApiKey', 'urlscanApiKey', 'ngrokAuthtoken', 'chiselServerUrl', 'chiselAuth'] as const
 
     for (const field of fields) {
       if (field in body) {
@@ -82,12 +93,38 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       create: { userId: id, ...data },
     })
 
-    // Return masked
+    // Push tunnel config to kali-sandbox if any tunnel field actually changed.
+    // A field "changed" if: (a) it's in the request body, AND (b) the new value
+    // written to `data[f]` differs from the previous DB value in `existing[f]`.
+    // Note: masked values (••••) are resolved to existing values above, so
+    // unchanged masked fields correctly compare as equal here.
+    const tunnelChanged = TUNNEL_FIELDS.some(f => f in body && data[f] !== (existing?.[f] ?? ''))
+    if (tunnelChanged) {
+      try {
+        await fetch('http://kali-sandbox:8015/tunnel/configure', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ngrokAuthtoken: settings.ngrokAuthtoken,
+            chiselServerUrl: settings.chiselServerUrl,
+            chiselAuth: settings.chiselAuth,
+          }),
+        })
+      } catch (e) {
+        console.warn('Failed to push tunnel config to kali-sandbox:', e)
+      }
+    }
+
+    // Return masked (chiselServerUrl is not a secret)
     return NextResponse.json({
       ...settings,
       tavilyApiKey: maskSecret(settings.tavilyApiKey),
       shodanApiKey: maskSecret(settings.shodanApiKey),
       serpApiKey: maskSecret(settings.serpApiKey),
+      nvdApiKey: maskSecret(settings.nvdApiKey),
+      urlscanApiKey: maskSecret(settings.urlscanApiKey),
+      ngrokAuthtoken: maskSecret(settings.ngrokAuthtoken),
+      chiselAuth: maskSecret(settings.chiselAuth),
     })
   } catch (error) {
     console.error('Failed to update user settings:', error)

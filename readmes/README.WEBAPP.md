@@ -78,9 +78,8 @@ docker compose up -d
 # 2. Install dependencies
 npm install
 
-# 3. Copy and configure environment
-cp .env.example .env.local
-# Edit .env.local with your Neo4j password
+# 3. Environment is auto-configured via docker-compose defaults
+# All API keys and settings are managed from the webapp UI at /settings
 
 # 4. Run development server (with hot reload)
 npm run dev
@@ -116,9 +115,8 @@ docker run -p 3000:3000 \
 # 1. Make sure Neo4j is running (from graph_db folder)
 cd ../graph_db && docker compose up -d && cd ../webapp
 
-# 2. Configure production environment
-cp .env.example .env
-# Edit .env with production values
+# 2. Environment is auto-configured via docker-compose defaults
+# All API keys and settings are managed from the webapp UI at /settings
 
 # 3. Build and start services
 docker compose up -d --build

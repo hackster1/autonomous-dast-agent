@@ -63,6 +63,13 @@ model UserSettings {
   tavilyApiKey    String   @default("") @map("tavily_api_key")
   shodanApiKey    String   @default("") @map("shodan_api_key")
   serpApiKey       String   @default("") @map("serp_api_key")
+  nvdApiKey       String   @default("") @map("nvd_api_key")
+  urlscanApiKey   String   @default("") @map("urlscan_api_key")
+
+  // Tunneling & Infrastructure
+  ngrokAuthtoken  String   @default("") @map("ngrok_authtoken")
+  chiselServerUrl String   @default("") @map("chisel_server_url")
+  chiselAuth      String   @default("") @map("chisel_auth")
 
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")

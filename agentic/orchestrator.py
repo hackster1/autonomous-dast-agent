@@ -10,8 +10,6 @@ import os
 import logging
 from typing import Optional
 
-from dotenv import load_dotenv
-
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import StateGraph, START, END
@@ -52,8 +50,6 @@ from orchestrator_helpers.nodes import (
 
 checkpointer = MemorySaver()
 set_checkpointer(checkpointer)
-
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 

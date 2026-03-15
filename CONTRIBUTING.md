@@ -67,8 +67,7 @@ cd RedAmon
 # Add the main repo as upstream (you'll need this to stay in sync)
 git remote add upstream https://github.com/samugit83/redamon.git
 
-cp .env.example .env
-# Edit .env with your API keys (see README for details)
+# No .env file needed — all settings are configured from the webapp UI at /settings
 
 docker compose --profile tools build
 docker compose up -d postgres neo4j recon-orchestrator kali-sandbox agent webapp

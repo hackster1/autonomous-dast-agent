@@ -40,6 +40,7 @@ from prompts import (
     build_tool_name_enum,
     build_tool_args_section,
 )
+from utils import get_session_config_prompt
 from tools import set_tenant_context, set_phase_context
 
 logger = logging.getLogger(__name__)
@@ -137,15 +138,42 @@ async def think_node(state: AgentState, config, *, llm, guidance_queues, neo4j_c
 
         if trigger_reason:
             try:
+                # Build session config (tunnel/LHOST/LPORT) for deep think context
+                _attack_path = state.get("attack_path_type", "")
+                _is_statefull = get_setting('POST_EXPL_PHASE_TYPE', 'statefull') == 'statefull'
+                _needs_session = (
+                    (phase == "exploitation" and _is_statefull)
+                    or _attack_path == "phishing_social_engineering"
+                )
+                _session_config = ""
+                if _needs_session:
+                    _sc = get_session_config_prompt()
+                    if _sc:
+                        _session_config = f"\n{_sc}\n"
+
+                # Build RoE section if enabled
+                _roe_section = ""
+                if get_setting('ROE_ENABLED', False):
+                    from prompts.base import build_roe_prompt_section
+                    _roe = build_roe_prompt_section()
+                    if _roe:
+                        _roe_section = f"\n{_roe}\n"
+
                 deep_think_prompt = DEEP_THINK_PROMPT.format(
                     current_phase=phase,
                     objective=current_objective,
-                    attack_path_type=state.get("attack_path_type", ""),
+                    attack_path_type=_attack_path,
+                    attack_path_behavior=build_attack_path_behavior(_attack_path),
+                    phase_definitions=build_phase_definitions(),
                     iteration=iteration,
                     max_iterations=state.get("max_iterations", get_setting('MAX_ITERATIONS', 100)),
                     target_info=target_info_formatted,
                     chain_context=chain_context_formatted,
                     trigger_reason=trigger_reason,
+                    todo_list=todo_list_formatted,
+                    objective_history=objective_history_formatted,
+                    session_config=_session_config,
+                    roe_section=_roe_section,
                 )
 
                 dt_response = await llm.ainvoke([

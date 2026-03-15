@@ -248,7 +248,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     'CVE_LOOKUP_MAX_CVES': 20,
     'CVE_LOOKUP_MIN_CVSS': 0.0,
     'VULNERS_API_KEY': '',
-    'NVD_API_KEY': os.getenv('NVD_API_KEY', ''),
+    'NVD_API_KEY': '',  # Configured in Global Settings → Tool API Keys
 
     # MITRE CWE/CAPEC Enrichment
     'MITRE_AUTO_UPDATE_DB': True,
@@ -297,6 +297,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     'SHODAN_DOMAIN_DNS': False,
     'SHODAN_PASSIVE_CVES': False,
     'SHODAN_API_KEY': '',
+    'URLSCAN_API_KEY': '',
 
     # Rules of Engagement (recon-relevant fields only)
     'ROE_ENABLED': False,
@@ -310,17 +311,27 @@ DEFAULT_SETTINGS: dict[str, Any] = {
 }
 
 
-def _fetch_shodan_api_key(user_id: str, webapp_url: str) -> str:
-    """Fetch the unmasked Shodan API key from user's global settings."""
+def _fetch_user_api_key(user_id: str, webapp_url: str, key_name: str) -> str:
+    """Fetch an unmasked API key from user's global settings."""
     import requests as _req
     try:
         url = f"{webapp_url.rstrip('/')}/api/users/{user_id}/settings?internal=true"
         resp = _req.get(url, timeout=10)
         resp.raise_for_status()
-        return resp.json().get('shodanApiKey', '')
+        return resp.json().get(key_name, '')
     except Exception as e:
-        logger.warning(f"Could not fetch Shodan API key: {e}")
+        logger.warning(f"Could not fetch {key_name}: {e}")
         return ''
+
+
+def _fetch_shodan_api_key(user_id: str, webapp_url: str) -> str:
+    """Fetch the unmasked Shodan API key from user's global settings."""
+    return _fetch_user_api_key(user_id, webapp_url, 'shodanApiKey')
+
+
+def _fetch_urlscan_api_key(user_id: str, webapp_url: str) -> str:
+    """Fetch the unmasked URLScan API key from user's global settings."""
+    return _fetch_user_api_key(user_id, webapp_url, 'urlscanApiKey')
 
 
 def fetch_project_settings(project_id: str, webapp_url: str) -> dict[str, Any]:
@@ -570,6 +581,14 @@ def fetch_project_settings(project_id: str, webapp_url: str) -> dict[str, Any]:
     ])
     if shodan_any and settings.get('USER_ID'):
         settings['SHODAN_API_KEY'] = _fetch_shodan_api_key(settings['USER_ID'], webapp_url)
+
+    # Fetch URLScan API key from user's global settings (used by GAU)
+    gau_uses_urlscan = (
+        settings.get('GAU_ENABLED', False)
+        and 'urlscan' in settings.get('GAU_PROVIDERS', [])
+    )
+    if gau_uses_urlscan and settings.get('USER_ID'):
+        settings['URLSCAN_API_KEY'] = _fetch_urlscan_api_key(settings['USER_ID'], webapp_url)
 
     # Rules of Engagement
     settings['ROE_ENABLED'] = project.get('roeEnabled', DEFAULT_SETTINGS['ROE_ENABLED'])

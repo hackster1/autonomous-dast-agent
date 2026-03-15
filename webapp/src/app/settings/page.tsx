@@ -13,12 +13,22 @@ interface UserSettings {
   tavilyApiKey: string
   shodanApiKey: string
   serpApiKey: string
+  nvdApiKey: string
+  urlscanApiKey: string
+  ngrokAuthtoken: string
+  chiselServerUrl: string
+  chiselAuth: string
 }
 
 const EMPTY_SETTINGS: UserSettings = {
   tavilyApiKey: '',
   shodanApiKey: '',
   serpApiKey: '',
+  nvdApiKey: '',
+  urlscanApiKey: '',
+  ngrokAuthtoken: '',
+  chiselServerUrl: '',
+  chiselAuth: '',
 }
 
 function getProviderIcon(providerType: string): string {
@@ -210,6 +220,11 @@ export default function SettingsPage() {
           tavilyApiKey: data.tavilyApiKey || '',
           shodanApiKey: data.shodanApiKey || '',
           serpApiKey: data.serpApiKey || '',
+          nvdApiKey: data.nvdApiKey || '',
+          urlscanApiKey: data.urlscanApiKey || '',
+          ngrokAuthtoken: data.ngrokAuthtoken || '',
+          chiselServerUrl: data.chiselServerUrl || '',
+          chiselAuth: data.chiselAuth || '',
         })
       }
     } catch (err) {
@@ -252,6 +267,11 @@ export default function SettingsPage() {
           tavilyApiKey: data.tavilyApiKey || '',
           shodanApiKey: data.shodanApiKey || '',
           serpApiKey: data.serpApiKey || '',
+          nvdApiKey: data.nvdApiKey || '',
+          urlscanApiKey: data.urlscanApiKey || '',
+          ngrokAuthtoken: data.ngrokAuthtoken || '',
+          chiselServerUrl: data.chiselServerUrl || '',
+          chiselAuth: data.chiselAuth || '',
         })
         setSettingsDirty(false)
       }
@@ -361,6 +381,7 @@ export default function SettingsPage() {
               label="Tavily API Key"
               hint="Enables web_search tool for CVE research and exploit lookups"
               signupUrl="https://app.tavily.com/home"
+              badges={['AI Agent']}
               value={settings.tavilyApiKey}
               visible={!!visibleFields.tavilyApiKey}
               onToggle={() => toggleFieldVisibility('tavilyApiKey')}
@@ -370,6 +391,7 @@ export default function SettingsPage() {
               label="Shodan API Key"
               hint="Enables the shodan tool for internet-wide OSINT (search, host info, DNS, count)"
               signupUrl="https://account.shodan.io/"
+              badges={['AI Agent', 'Recon Pipeline']}
               value={settings.shodanApiKey}
               visible={!!visibleFields.shodanApiKey}
               onToggle={() => toggleFieldVisibility('shodanApiKey')}
@@ -379,24 +401,97 @@ export default function SettingsPage() {
               label="SerpAPI Key"
               hint="Enables google_dork tool for Google dorking OSINT (site:, inurl:, filetype:). Free: 250 searches/month"
               signupUrl="https://serpapi.com/manage-api-key"
+              badges={['AI Agent']}
               value={settings.serpApiKey}
               visible={!!visibleFields.serpApiKey}
               onToggle={() => toggleFieldVisibility('serpApiKey')}
               onChange={v => updateSetting('serpApiKey', v)}
             />
+            <SecretField
+              label="NVD API Key"
+              hint="NIST NVD API key — increases CVE lookup rate limit from 5 to 120 requests/30s"
+              signupUrl="https://nvd.nist.gov/developers/request-an-api-key"
+              badges={['Recon Pipeline']}
+              value={settings.nvdApiKey}
+              visible={!!visibleFields.nvdApiKey}
+              onToggle={() => toggleFieldVisibility('nvdApiKey')}
+              onChange={v => updateSetting('nvdApiKey', v)}
+            />
+            <SecretField
+              label="URLScan API Key"
+              hint="Optional — used by GAU passive URL discovery for higher rate limits and more URLScan results"
+              signupUrl="https://urlscan.io/user/signup"
+              badges={['Recon Pipeline']}
+              value={settings.urlscanApiKey}
+              visible={!!visibleFields.urlscanApiKey}
+              onToggle={() => toggleFieldVisibility('urlscanApiKey')}
+              onChange={v => updateSetting('urlscanApiKey', v)}
+            />
           </div>
         )}
-        {settingsDirty && (
+        {settingsDirty && !settingsSaving && (
           <div className={styles.formActions} style={{ justifyContent: 'flex-end', marginTop: '12px' }}>
             <button className="primaryButton" onClick={saveSettings} disabled={settingsSaving}>
-              {settingsSaving ? <Loader2 size={14} className={styles.spin} /> : null}
               Save Settings
             </button>
           </div>
         )}
       </div>
 
-      {/* Section 3: Attack Skills */}
+      {/* Section 3: Tunneling */}
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Tunneling</h2>
+        </div>
+        <p className={styles.sectionHint}>
+          Configure reverse shell tunneling. Choose ngrok (free, single port) or chisel (multi-port, requires VPS). Changes apply immediately.
+        </p>
+        {settingsLoading ? (
+          <div className={styles.emptyState}><Loader2 size={16} className={styles.spin} /> Loading...</div>
+        ) : (
+          <div className={styles.settingsGrid}>
+            <SecretField
+              label="ngrok Auth Token"
+              hint="Enables ngrok TCP tunnel for reverse shells on port 4444. Stageless payloads only."
+              signupUrl="https://dashboard.ngrok.com/get-started/your-authtoken"
+              value={settings.ngrokAuthtoken}
+              visible={!!visibleFields.ngrokAuthtoken}
+              onToggle={() => toggleFieldVisibility('ngrokAuthtoken')}
+              onChange={v => updateSetting('ngrokAuthtoken', v)}
+            />
+            <div className="formGroup">
+              <label className="formLabel">Chisel Server URL</label>
+              <input
+                className="textInput"
+                type="text"
+                value={settings.chiselServerUrl}
+                onChange={e => updateSetting('chiselServerUrl', e.target.value)}
+                placeholder="e.g. http://your-vps.com:9090"
+              />
+              <span className="formHint">
+                Your VPS chisel server URL. Run on VPS: <code>chisel server -p 9090 --reverse</code>. Tunnels ports 4444 (handler) + 8080 (web delivery).
+              </span>
+            </div>
+            <SecretField
+              label="Chisel Auth"
+              hint="user:pass for chisel server authentication (optional — only if your chisel server requires auth)"
+              value={settings.chiselAuth}
+              visible={!!visibleFields.chiselAuth}
+              onToggle={() => toggleFieldVisibility('chiselAuth')}
+              onChange={v => updateSetting('chiselAuth', v)}
+            />
+          </div>
+        )}
+        {settingsDirty && !settingsSaving && (
+          <div className={styles.formActions} style={{ justifyContent: 'flex-end', marginTop: '12px' }}>
+            <button className="primaryButton" onClick={saveSettings} disabled={settingsSaving}>
+              Save Settings
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Section 4: Attack Skills */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}><Swords size={16} /> Attack Skills</h2>
@@ -549,11 +644,40 @@ export default function SettingsPage() {
   )
 }
 
+// Badge color mapping
+const BADGE_STYLES: Record<string, React.CSSProperties> = {
+  'AI Agent': {
+    display: 'inline-block',
+    fontSize: '10px',
+    fontWeight: 600,
+    padding: '1px 6px',
+    borderRadius: '4px',
+    background: 'rgba(139, 92, 246, 0.15)',
+    color: 'rgb(167, 139, 250)',
+    marginLeft: '6px',
+    verticalAlign: 'middle',
+    letterSpacing: '0.02em',
+  },
+  'Recon Pipeline': {
+    display: 'inline-block',
+    fontSize: '10px',
+    fontWeight: 600,
+    padding: '1px 6px',
+    borderRadius: '4px',
+    background: 'rgba(20, 184, 166, 0.15)',
+    color: 'rgb(94, 234, 212)',
+    marginLeft: '6px',
+    verticalAlign: 'middle',
+    letterSpacing: '0.02em',
+  },
+}
+
 // Reusable secret field component
 function SecretField({
   label,
   hint,
   signupUrl,
+  badges,
   value,
   visible,
   onToggle,
@@ -562,6 +686,7 @@ function SecretField({
   label: string
   hint: string
   signupUrl?: string
+  badges?: string[]
   value: string
   visible: boolean
   onToggle: () => void
@@ -569,7 +694,14 @@ function SecretField({
 }) {
   return (
     <div className="formGroup">
-      <label className="formLabel">{label}</label>
+      <label className="formLabel">
+        {label}
+        {badges?.map(badge => (
+          <span key={badge} style={BADGE_STYLES[badge] || BADGE_STYLES['AI Agent']}>
+            {badge}
+          </span>
+        ))}
+      </label>
       <div className={styles.secretInputWrapper}>
         <input
           className="textInput"

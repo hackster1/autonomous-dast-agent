@@ -369,7 +369,6 @@ redamon/
 ├── readmes/                        # All documentation (you are here)
 ├── .github/                        # GitHub Actions CI/CD workflows
 ├── docker-compose.yml              # Full stack orchestration — all containers, networks, volumes
-├── .env.example                    # Environment variable template
 ├── CONTRIBUTING.md                 # Contribution guidelines and contributor ranks
 ├── CHANGELOG.md                    # Release history
 ├── DISCLAIMER.md                   # Legal disclaimer
@@ -599,14 +598,13 @@ Settings have defaults defined in **four layers** that must stay in sync:
 ```bash
 git clone https://github.com/samugit83/redamon.git
 cd redamon
-cp .env.example .env          # Edit: set NVD_API_KEY if you have one
 docker compose up -d           # Start all services
 ```
 
 - **First run**: GVM feed sync takes **~10–15 minutes**. All other services are ready immediately.
 - Access the webapp at **http://localhost:3000**.
 - Create a user account.
-- Configure your LLM provider API key in the webapp at `/settings` (Global Settings page).
+- Configure your LLM provider API key and other settings in the webapp at `/settings` (Global Settings page). No `.env` file is needed — all API keys, tunnel credentials, and tool settings are configured from the UI.
 - Create a project, set a target domain, and you're ready to go.
 
 **Verify everything is running:**
@@ -861,18 +859,9 @@ docker compose run --rm recon python -m pytest tests/ -v
 
 ## 8. Environment Variables
 
-All infrastructure variables are defined in `.env` (copied from `.env.example`). The `.env.example` file is intentionally minimal — only infrastructure and scanner variables belong here.
+No `.env` file is required. All user-configurable settings (API keys, tunnel credentials) are managed from the **Global Settings** page (`/settings`) and stored in PostgreSQL.
 
-> **Note**: LLM API keys (OpenAI, Anthropic, Tavily, Shodan, etc.) are configured **per-user** in the webapp UI at `/settings` and stored in PostgreSQL. They are NOT set via environment variables.
-
-### Variables in `.env.example`
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `NVD_API_KEY` | — | NIST NVD API key (optional — enables higher rate limits for CVE lookups) |
-| `NGROK_AUTHTOKEN` | — | Ngrok auth token (option 1 for reverse shell tunneling — free, single port) |
-| `CHISEL_SERVER_URL` | — | Chisel VPS URL (option 2 for tunneling — requires VPS, multi-port) |
-| `CHISEL_AUTH` | — | Chisel authentication credentials |
+> **Note**: LLM API keys, tool API keys (Tavily, Shodan, NVD, SerpAPI), and tunnel credentials (ngrok, chisel) are all configured **per-user** in the webapp UI at `/settings`. They are NOT set via environment variables.
 
 ### Variables in `docker-compose.yml` (with defaults)
 
