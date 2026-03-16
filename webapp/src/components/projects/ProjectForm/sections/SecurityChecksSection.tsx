@@ -22,11 +22,20 @@ export function SecurityChecksSection({ data, updateField }: SecurityChecksSecti
         <h2 className={styles.sectionTitle}>
           <ShieldCheck size={16} />
           Security Checks
+          <span className={styles.badgeActive}>Active</span>
         </h2>
-        <ChevronDown
-          size={16}
-          className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
-        />
+        <div className={styles.sectionHeaderRight}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Toggle
+              checked={data.securityCheckEnabled}
+              onChange={(checked) => updateField('securityCheckEnabled', checked)}
+            />
+          </div>
+          <ChevronDown
+            size={16}
+            className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
+          />
+        </div>
       </div>
 
       {isOpen && (
@@ -34,16 +43,6 @@ export function SecurityChecksSection({ data, updateField }: SecurityChecksSecti
           <p className={styles.sectionDescription}>
             Run custom security validation checks on discovered findings. Includes header analysis, SSL/TLS configuration review, and other automated security assessments to verify and contextualize vulnerabilities.
           </p>
-          <div className={styles.toggleRow}>
-            <div>
-              <span className={styles.toggleLabel}>Enable Security Checks</span>
-              <p className={styles.toggleDescription}>Run custom security checks on findings</p>
-            </div>
-            <Toggle
-              checked={data.securityCheckEnabled}
-              onChange={(checked) => updateField('securityCheckEnabled', checked)}
-            />
-          </div>
 
           {data.securityCheckEnabled && (
             <>

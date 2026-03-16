@@ -22,6 +22,7 @@ export function MitreSection({ data, updateField }: MitreSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Network size={16} />
           MITRE ATT&CK / CWE / CAPEC
+          <span className={styles.badgePassive}>Passive</span>
         </h2>
         <ChevronDown
           size={16}

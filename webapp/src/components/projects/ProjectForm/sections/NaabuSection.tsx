@@ -23,6 +23,7 @@ export function NaabuSection({ data, updateField }: NaabuSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Radio size={16} />
           Naabu Port Scanner
+          <span className={styles.badgeActive}>Active</span>
         </h2>
         <ChevronDown
           size={16}

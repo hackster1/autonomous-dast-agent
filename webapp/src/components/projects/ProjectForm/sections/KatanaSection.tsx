@@ -23,11 +23,20 @@ export function KatanaSection({ data, updateField }: KatanaSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Bug size={16} />
           Katana Web Crawler (DAST)
+          <span className={styles.badgeActive}>Active</span>
         </h2>
-        <ChevronDown
-          size={16}
-          className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
-        />
+        <div className={styles.sectionHeaderRight}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Toggle
+              checked={data.katanaEnabled}
+              onChange={(checked) => updateField('katanaEnabled', checked)}
+            />
+          </div>
+          <ChevronDown
+            size={16}
+            className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
+          />
+        </div>
       </div>
 
       {isOpen && (
@@ -35,16 +44,6 @@ export function KatanaSection({ data, updateField }: KatanaSectionProps) {
           <p className={styles.sectionDescription}>
             Active web crawling using Katana from ProjectDiscovery. Discovers URLs, endpoints, and parameters by following links and parsing JavaScript. Found URLs with parameters feed into Nuclei DAST mode for vulnerability fuzzing.
           </p>
-          <div className={styles.toggleRow}>
-            <div>
-              <span className={styles.toggleLabel}>Enable Katana</span>
-              <p className={styles.toggleDescription}>Active web crawling to discover endpoints and parameters for DAST vulnerability fuzzing</p>
-            </div>
-            <Toggle
-              checked={data.katanaEnabled}
-              onChange={(checked) => updateField('katanaEnabled', checked)}
-            />
-          </div>
 
           {data.katanaEnabled && (
             <>

@@ -34,6 +34,7 @@ export function NucleiSection({ data, updateField }: NucleiSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Shield size={16} />
           Nuclei Vulnerability Scanner
+          <span className={styles.badgeActive}>Active</span>
         </h2>
         <ChevronDown
           size={16}

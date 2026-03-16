@@ -23,11 +23,20 @@ export function KiterunnerSection({ data, updateField }: KiterunnerSectionProps)
         <h2 className={styles.sectionTitle}>
           <Zap size={16} />
           Kiterunner API Discovery
+          <span className={styles.badgeActive}>Active</span>
         </h2>
-        <ChevronDown
-          size={16}
-          className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
-        />
+        <div className={styles.sectionHeaderRight}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Toggle
+              checked={data.kiterunnerEnabled}
+              onChange={(checked) => updateField('kiterunnerEnabled', checked)}
+            />
+          </div>
+          <ChevronDown
+            size={16}
+            className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
+          />
+        </div>
       </div>
 
       {isOpen && (
@@ -35,17 +44,6 @@ export function KiterunnerSection({ data, updateField }: KiterunnerSectionProps)
           <p className={styles.sectionDescription}>
             API endpoint bruteforcing using Kiterunner from Assetnote. Discovers hidden REST API routes by testing against comprehensive wordlists derived from real-world Swagger/OpenAPI specifications.
           </p>
-          <div className={styles.toggleRow}>
-            <div>
-              <span className={styles.toggleLabel}>Enable Kiterunner</span>
-              <p className={styles.toggleDescription}>Bruteforce API routes using Swagger/OpenAPI specifications to find hidden endpoints</p>
-              <TimeEstimate estimate="5-30 min per endpoint" />
-            </div>
-            <Toggle
-              checked={data.kiterunnerEnabled}
-              onChange={(checked) => updateField('kiterunnerEnabled', checked)}
-            />
-          </div>
 
           {data.kiterunnerEnabled && (
             <>

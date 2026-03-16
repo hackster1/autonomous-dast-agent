@@ -23,11 +23,20 @@ export function CveLookupSection({ data, updateField }: CveLookupSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Database size={16} />
           CVE Lookup
+          <span className={styles.badgePassive}>Passive</span>
         </h2>
-        <ChevronDown
-          size={16}
-          className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
-        />
+        <div className={styles.sectionHeaderRight}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Toggle
+              checked={data.cveLookupEnabled}
+              onChange={(checked) => updateField('cveLookupEnabled', checked)}
+            />
+          </div>
+          <ChevronDown
+            size={16}
+            className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
+          />
+        </div>
       </div>
 
       {isOpen && (
@@ -35,17 +44,6 @@ export function CveLookupSection({ data, updateField }: CveLookupSectionProps) {
           <p className={styles.sectionDescription}>
             Enrich vulnerability findings with detailed CVE data from NVD and other sources. Provides CVSS scores, affected versions, exploitation status, and remediation guidance for discovered vulnerabilities.
           </p>
-          <div className={styles.toggleRow}>
-            <div>
-              <span className={styles.toggleLabel}>Enable CVE Lookup</span>
-              <p className={styles.toggleDescription}>Enrich findings with CVE data</p>
-              <TimeEstimate estimate="~1-5 min depending on technologies found" />
-            </div>
-            <Toggle
-              checked={data.cveLookupEnabled}
-              onChange={(checked) => updateField('cveLookupEnabled', checked)}
-            />
-          </div>
 
           {data.cveLookupEnabled && (
             <>

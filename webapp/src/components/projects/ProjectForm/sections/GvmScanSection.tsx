@@ -23,6 +23,7 @@ export function GvmScanSection({ data, updateField }: GvmScanSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Shield size={16} />
           GVM Vulnerability Scan
+          <span className={styles.badgeActive}>Active</span>
         </h2>
         <ChevronDown
           size={16}

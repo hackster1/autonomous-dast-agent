@@ -23,6 +23,7 @@ export function HttpxSection({ data, updateField }: HttpxSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Globe size={16} />
           httpx HTTP Probing
+          <span className={styles.badgeActive}>Active</span>
         </h2>
         <ChevronDown
           size={16}

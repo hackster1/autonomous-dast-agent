@@ -25,6 +25,7 @@ export function GithubSection({ data, updateField }: GithubSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Github size={16} />
           GitHub Secret Hunting
+          <span className={styles.badgePassive}>Passive</span>
         </h2>
         <ChevronDown
           size={16}

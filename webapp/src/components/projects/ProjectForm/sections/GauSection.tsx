@@ -34,11 +34,20 @@ export function GauSection({ data, updateField }: GauSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Link size={16} />
           GAU (GetAllUrls) Passive Discovery
+          <span className={styles.badgePassive}>Passive</span>
         </h2>
-        <ChevronDown
-          size={16}
-          className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
-        />
+        <div className={styles.sectionHeaderRight}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <Toggle
+              checked={data.gauEnabled}
+              onChange={(checked) => updateField('gauEnabled', checked)}
+            />
+          </div>
+          <ChevronDown
+            size={16}
+            className={`${styles.sectionIcon} ${isOpen ? styles.sectionIconOpen : ''}`}
+          />
+        </div>
       </div>
 
       {isOpen && (
@@ -47,17 +56,6 @@ export function GauSection({ data, updateField }: GauSectionProps) {
             Passive URL discovery using GetAllUrls (GAU). Retrieves historical URLs from web archives and threat intelligence sources without touching the target directly. Complements Katana&apos;s active crawling with archived data.
             GAU works without any API keys. To get higher rate limits and more results from URLScan, you can set a URLScan API key in <strong>Settings &gt; Tool API Keys</strong>.
           </p>
-          <div className={styles.toggleRow}>
-            <div>
-              <span className={styles.toggleLabel}>Enable GAU</span>
-              <p className={styles.toggleDescription}>Fetch historical URLs from Wayback Machine, Common Crawl, OTX, and URLScan</p>
-              <TimeEstimate estimate="~20-60 sec per domain" />
-            </div>
-            <Toggle
-              checked={data.gauEnabled}
-              onChange={(checked) => updateField('gauEnabled', checked)}
-            />
-          </div>
 
           {data.gauEnabled && (
             <>

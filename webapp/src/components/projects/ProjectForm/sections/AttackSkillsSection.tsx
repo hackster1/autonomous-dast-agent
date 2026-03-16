@@ -142,6 +142,7 @@ export function AttackSkillsSection({ data, updateField }: AttackSkillsSectionPr
           <h2 className={styles.sectionTitle}>
             <Bug size={16} />
             Built-in Attack Skills
+            <span className={styles.badgeActive}>Active</span>
           </h2>
           <ChevronDown
             size={16}
@@ -193,6 +194,7 @@ export function AttackSkillsSection({ data, updateField }: AttackSkillsSectionPr
                       }}>
                         {skill.icon}
                         {skill.name}
+                        <span className={styles.badgeActive}>Active</span>
                       </div>
                       <div style={{
                         fontSize: 'var(--text-xs)',

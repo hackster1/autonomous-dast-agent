@@ -41,6 +41,7 @@ export function ShodanSection({ data, updateField }: ShodanSectionProps) {
         <h2 className={styles.sectionTitle}>
           <Radar size={16} />
           Shodan OSINT Enrichment
+          <span className={styles.badgePassive}>Passive</span>
         </h2>
         <ChevronDown
           size={16}
