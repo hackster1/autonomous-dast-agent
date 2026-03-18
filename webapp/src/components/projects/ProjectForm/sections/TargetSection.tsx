@@ -202,8 +202,13 @@ export function TargetSection({ data, updateField, mode = 'create' }: TargetSect
                 <span className={styles.fieldHint}>
                   {isLocked
                     ? 'Target domain and subdomains are locked after project creation to keep graph data consistent. To change them, create a new project.'
-                    : 'Leave empty to discover all subdomains. Enter prefixes without dots (e.g., "www, api, gpigs").'}
+                    : 'Leave empty to discover all subdomains. Enter prefixes without dots (e.g., "www, api, admin").'}
                 </span>
+                {!isLocked && displayPrefixes.trim().length > 0 && (
+                  <span className={styles.fieldHintWarning}>
+                    Specifying prefixes disables full subdomain discovery (Subfinder/Amass). Only the listed prefixes will be scanned.
+                  </span>
+                )}
               </div>
 
               <div className={styles.toggleRow}>

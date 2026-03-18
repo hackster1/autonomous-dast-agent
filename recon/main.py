@@ -266,30 +266,31 @@ def parse_target(target: str, subdomain_list: list = None) -> dict:
     # TARGET_DOMAIN is always the root domain (e.g., "vulnweb.com")
     root_domain = target
 
-    # Determine if we're in filtered mode (SUBDOMAIN_LIST has entries)
+    # Parse subdomain list and determine scan mode
     subdomain_list = subdomain_list or []
-    filtered_mode = len(subdomain_list) > 0
-
-    # Check if root domain should be included (prefix "." means root domain)
     include_root_domain = False
-    
+
     # Build full subdomain names from prefixes
     full_subdomains = []
-    if filtered_mode:
-        for prefix in subdomain_list:
-            # Handle "." as special case meaning root domain itself
-            clean_prefix = prefix.rstrip('.')
-            if clean_prefix == "" or prefix == ".":
-                # "." means include root domain directly (e.g., vulnweb.com)
-                include_root_domain = True
-                # Add root domain to the list
-                if root_domain not in full_subdomains:
-                    full_subdomains.append(root_domain)
-            else:
-                # Normal subdomain prefix (e.g., "testphp." -> testphp.vulnweb.com)
-                full_subdomain = f"{clean_prefix}.{root_domain}"
-                if full_subdomain not in full_subdomains:
-                    full_subdomains.append(full_subdomain)
+    for prefix in subdomain_list:
+        # Handle "." as special case meaning root domain itself
+        clean_prefix = prefix.rstrip('.')
+        if clean_prefix == "" or prefix == ".":
+            # "." means include root domain directly (e.g., vulnweb.com)
+            include_root_domain = True
+            # Add root domain to the list
+            if root_domain not in full_subdomains:
+                full_subdomains.append(root_domain)
+        else:
+            # Normal subdomain prefix (e.g., "testphp." -> testphp.vulnweb.com)
+            full_subdomain = f"{clean_prefix}.{root_domain}"
+            if full_subdomain not in full_subdomains:
+                full_subdomains.append(full_subdomain)
+
+    # Filtered mode only when actual subdomain prefixes are specified (not just ".")
+    # "." alone means "include root domain" — it should NOT skip subdomain discovery
+    actual_prefixes = [p for p in subdomain_list if p.rstrip('.') != "" and p != "."]
+    filtered_mode = len(actual_prefixes) > 0
 
     return {
         "target": target,
@@ -795,12 +796,17 @@ def run_domain_recon(target: str, anonymous: bool = False, bruteforce: bool = Fa
         if recon_result:
             discovered_subs = recon_result.get("subdomains", [])
             discovered_subs = _filter_roe_excluded(discovered_subs, _settings, label="discovered subdomain")
+            # Ensure root domain is included when "Include Root Domain" is toggled
+            include_root = target_info.get("include_root_domain", False)
+            if include_root and root_domain not in discovered_subs:
+                discovered_subs.insert(0, root_domain)
             combined_result["subdomains"] = discovered_subs
             combined_result["subdomain_count"] = len(discovered_subs)
             combined_result["metadata"]["modules_executed"].append("subdomain_discovery")
             if recon_result.get("external_domains"):
                 combined_result["domain_discovery_external_domains"] = recon_result["external_domains"]
             combined_result["dns"] = recon_result.get("dns", {})
+            combined_result["metadata"]["include_root_domain"] = include_root
             combined_result["metadata"]["modules_executed"].append("dns_resolution")
             print(f"[+][Discovery] Merged: {len(discovered_subs)} subdomains")
         else:

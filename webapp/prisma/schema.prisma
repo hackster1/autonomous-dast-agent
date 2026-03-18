@@ -103,7 +103,7 @@ model Project {
   scanModules                 String[] @default(["domain_discovery", "port_scan", "http_probe", "resource_enum", "vuln_scan"]) @map("scan_modules")
   updateGraphDb               Boolean  @default(true) @map("update_graph_db")
   useTorForRecon              Boolean  @default(false) @map("use_tor_for_recon")
-  useBruteforceForSubdomains  Boolean  @default(true) @map("use_bruteforce_for_subdomains")
+  useBruteforceForSubdomains  Boolean  @default(false) @map("use_bruteforce_for_subdomains")
 
   // ========== WHOIS/DNS ==========
   whoisEnabled                Boolean  @default(true) @map("whois_enabled")
@@ -385,7 +385,7 @@ model Project {
   amassMaxResults                       Int      @default(5000)  @map("amass_max_results")
   amassTimeout                          Int      @default(10)    @map("amass_timeout")
   amassActive                           Boolean  @default(true) @map("amass_active")
-  amassBrute                            Boolean  @default(true) @map("amass_brute")
+  amassBrute                            Boolean  @default(false) @map("amass_brute")
   amassDockerImage                      String   @default("caffix/amass:latest") @map("amass_docker_image")
 
   // ========== PHISHING / SOCIAL ENGINEERING SETTINGS ==========

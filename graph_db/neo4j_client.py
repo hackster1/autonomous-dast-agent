@@ -4611,7 +4611,7 @@ class Neo4jClient:
                     stats["errors"].append(f"Failed to create CVE {cve_id} for {ip}: {e}")
 
             # Print summary
-            print(f"\n[+] Shodan Graph Update Summary:")
+            print(f"\n[+][graph-db] Shodan Graph Update Summary:")
             print(f"[+][graph-db] Enriched {stats['ips_enriched']} IP nodes")
             print(f"[+][graph-db] Created {stats['ports_created']} Port nodes")
             print(f"[+][graph-db] Created {stats['services_created']} Service nodes")

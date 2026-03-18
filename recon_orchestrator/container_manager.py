@@ -382,7 +382,7 @@ class ContainerManager:
                 break
 
         return ReconLogEvent(
-            log=line.strip(),
+            log=line.rstrip(),
             timestamp=timestamp,
             phase=phase,
             phase_number=phase_num,
@@ -451,7 +451,7 @@ class ContainerManager:
                     if line is None:
                         break
 
-                    decoded_line = line.decode("utf-8", errors="replace").strip()
+                    decoded_line = line.decode("utf-8", errors="replace").rstrip()
                     if decoded_line:
                         # Parse Docker timestamp prefix (RFC3339Nano format)
                         docker_ts = None
@@ -789,7 +789,7 @@ class ContainerManager:
                 break
 
         return GvmLogEvent(
-            log=line.strip(),
+            log=line.rstrip(),
             timestamp=timestamp,
             phase=phase,
             phase_number=phase_num,
@@ -850,7 +850,7 @@ class ContainerManager:
                     if line is None:
                         break
 
-                    decoded_line = line.decode("utf-8", errors="replace").strip()
+                    decoded_line = line.decode("utf-8", errors="replace").rstrip()
                     if decoded_line:
                         # Parse Docker timestamp prefix
                         docker_ts = None
@@ -1157,7 +1157,7 @@ class ContainerManager:
                 break
 
         return GithubHuntLogEvent(
-            log=line.strip(),
+            log=line.rstrip(),
             timestamp=timestamp,
             phase=phase,
             phase_number=phase_num,
@@ -1218,7 +1218,7 @@ class ContainerManager:
                     if line is None:
                         break
 
-                    decoded_line = line.decode("utf-8", errors="replace").strip()
+                    decoded_line = line.decode("utf-8", errors="replace").rstrip()
                     if decoded_line:
                         # Parse Docker timestamp prefix
                         docker_ts = None

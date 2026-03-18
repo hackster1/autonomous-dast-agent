@@ -223,6 +223,11 @@
   color: var(--text-tertiary);
 }
 
+.fieldHintWarning {
+  font-size: 10px;
+  color: var(--status-error);
+}
+
 .toggleRow {
   display: flex;
   align-items: center;

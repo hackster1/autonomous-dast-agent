@@ -36,7 +36,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     'SCAN_MODULES': ['domain_discovery', 'port_scan', 'http_probe', 'resource_enum', 'vuln_scan'],
     'UPDATE_GRAPH_DB': True,
     'USE_TOR_FOR_RECON': False,
-    'USE_BRUTEFORCE_FOR_SUBDOMAINS': True,
+    'USE_BRUTEFORCE_FOR_SUBDOMAINS': False,
     'STEALTH_MODE': False,
 
     # WHOIS/DNS
@@ -321,7 +321,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     'AMASS_MAX_RESULTS': 5000,
     'AMASS_TIMEOUT': 10,
     'AMASS_ACTIVE': True,
-    'AMASS_BRUTE': True,
+    'AMASS_BRUTE': False,
     'AMASS_DOCKER_IMAGE': 'caffix/amass:latest',
 
     # Rules of Engagement (recon-relevant fields only)
